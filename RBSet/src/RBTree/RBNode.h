@@ -108,6 +108,10 @@ Node<T>* treeInsert(Node<T>** pp_root, const T& value) {
 	Node<T>* p_parent = NULL;
 
 	while (*pp_node != NULL) {
+		if ((*pp_node)->key == value) {
+			return NULL;
+		}
+
 		p_parent = *pp_node;
 
 		if (value < (**pp_node).key) {
@@ -135,6 +139,11 @@ NodeColor color(Node<T>* node) {
 template <typename T>
 void rbTreeInsert(Node<T>** pp_root, const T& key) {
 	Node<T>* x = treeInsert(pp_root, key);
+
+	if (x == NULL) {
+		return;
+	}
+
 	x->color = RED;
 
 	while (x != *pp_root && x->parent->color == RED) {

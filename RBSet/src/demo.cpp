@@ -156,7 +156,20 @@ void testIteratorFind() {
 	cout << (tree.find(42) == tree.end()) << std::endl;
 }
 
+void testRepeatedInsert() {
+	RBTree<int> tree;
+	tree.put(3);
+	tree.put(2);
+	tree.put(1);
+
+	tree.put(2);
+	tree.put(3);
+	tree.put(1);
+
+	tree.serialize(cout);
+}
+
 int main() {
-	testIteratorFind();
+	testRepeatedInsert();
 	return 0;
 }
