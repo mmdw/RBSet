@@ -116,9 +116,47 @@ void testIterator() {
 	cout << *iter << std::endl; // 1
 }
 
-int main() {
-//	testParser();
-	testIterator();
+void testIteratorComparsion() {
+	RBTree<int> tree;
+	tree.put(5);
+	tree.put(6);
+	tree.put(7);
+	tree.put(3);
+	tree.put(2);
+	tree.put(1);
+	tree.put(4);
 
+	// forward
+	for (RBTree<int>::Iterator it = tree.begin(); it != tree.end(); ++it) {
+		cout << *it << " ";
+	}
+	cout << endl;
+
+	// backward
+	RBTree<int>::Iterator it = tree.end();
+	while (it != tree.begin()) {
+		--it;
+		cout << *it << " ";
+	}
+	cout << endl;
+}
+
+void testIteratorFind() {
+	RBTree<int> tree;
+	tree.put(5);
+	tree.put(6);
+	tree.put(7);
+	tree.put(3);
+	tree.put(2);
+	tree.put(1);
+	tree.put(4);
+
+	cout << (*tree.find(6) == 6) << std::endl;
+	cout << (*tree.find(2) == 2) << std::endl;
+	cout << (tree.find(42) == tree.end()) << std::endl;
+}
+
+int main() {
+	testIteratorFind();
 	return 0;
 }

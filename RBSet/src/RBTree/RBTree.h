@@ -36,9 +36,12 @@ public:
 
 	Iterator begin();
 	Iterator end();
+	Iterator find(const T& key);
 
 	class Iterator {
 		friend Iterator RBTree<T>::begin();
+		friend Iterator RBTree<T>::end();
+		friend Iterator RBTree<T>::find(const T& key);
 
 		Node<T>* p_node;
 		Node<T>* p_root;
@@ -91,6 +94,17 @@ typename RBTree<T>::Iterator RBTree<T>::begin() {
 template <typename T>
 typename RBTree<T>::Iterator RBTree<T>::end() {
 	return Iterator(NULL, p_root);
+}
+
+template <typename T>
+typename RBTree<T>::Iterator RBTree<T>::find(const T& key) {
+	Node<T>* p_node = p_root;
+
+	while (p_node != NULL && p_node->key != key) {
+		p_node = p_node->key > key ? p_node->left : p_node->right;
+	}
+
+	return Iterator(p_node, p_root);
 }
 
 template <typename T>
@@ -154,6 +168,16 @@ template <typename T>
 T& RBTree<T>::Iterator::operator*() {
 	// todo NULL dereferencing
 	return p_node->key;
+}
+
+template <typename T>
+bool RBTree<T>::Iterator::operator==(const Iterator& iter) {
+	return iter.p_root == p_root && iter.p_node == p_node;
+}
+
+template <typename T>
+bool RBTree<T>::Iterator::operator!=(const Iterator& iter) {
+	return !(*this == iter);
 }
 
 template <typename T>
