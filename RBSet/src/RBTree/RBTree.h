@@ -18,17 +18,19 @@ using std::endl;
 template <typename T>
 class RBTree {
 	Node<T> * p_root;
+	size_t count;
 
 public:
 	class Iterator;
 
-	RBTree() : p_root(NULL) {
+	RBTree() : p_root(NULL), count(0) {
 	}
 
 	RBTree(istream& os);
 
 	void put(const T& key);
 	void serialize(ostream& os);
+	size_t size();
 
 	virtual ~RBTree() {
 		delete p_root;
@@ -63,8 +65,8 @@ public:
 };
 
 template<typename T>
-RBTree<T>::RBTree(istream& is) : p_root(NULL) {
-	parseRbNode(is, &p_root);
+RBTree<T>::RBTree(istream& is) : p_root(NULL), count(0) {
+	parseRbNode(is, &p_root, count);
 }
 
 template<typename T>
@@ -77,8 +79,15 @@ void RBTree<T>::serialize(ostream& os) {
 }
 
 template <typename T>
+size_t RBTree<T>::size() {
+	return count;
+}
+
+template <typename T>
 void RBTree<T>::put(const T& key) {
-	rbTreeInsert(&p_root, key);
+	if (rbTreeInsert(&p_root, key)) {
+		count++;
+	}
 }
 
 template <typename T>

@@ -137,11 +137,11 @@ NodeColor color(Node<T>* node) {
 }
 
 template <typename T>
-void rbTreeInsert(Node<T>** pp_root, const T& key) {
+bool rbTreeInsert(Node<T>** pp_root, const T& key) {
 	Node<T>* x = treeInsert(pp_root, key);
 
 	if (x == NULL) {
-		return;
+		return false;
 	}
 
 	x->color = RED;
@@ -197,6 +197,8 @@ void rbTreeInsert(Node<T>** pp_root, const T& key) {
 	}
 
 	(*pp_root)->color = BLACK;
+
+	return true;
 }
 
 template<typename T>

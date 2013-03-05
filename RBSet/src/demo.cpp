@@ -76,8 +76,11 @@ void testRbInsert() {
 void testParser() {
 	istringstream iss("{key: 13, color: red, left:null, right : {key: 99, color: red, left: {key: 77}}}");
 	Node<int> * p_node = NULL;
+	size_t count = 0;
 
-	parseRbNode(iss, &p_node);
+	parseRbNode(iss, &p_node, count);
+	assert(count == 3);
+
 	p_node->serialize(std::cout, 0);
 }
 
@@ -161,15 +164,18 @@ void testRepeatedInsert() {
 	tree.put(3);
 	tree.put(2);
 	tree.put(1);
+	assert(tree.size() == 3);
 
 	tree.put(2);
 	tree.put(3);
 	tree.put(1);
+	assert(tree.size() == 3);
 
 	tree.serialize(cout);
 }
 
 int main() {
+	testParser();
 	testRepeatedInsert();
 	return 0;
 }

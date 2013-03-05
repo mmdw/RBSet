@@ -17,7 +17,7 @@ using std::string;
 using std::istringstream;
 
 template<typename T>
-void parseFieldSequence(std::istream& is, Node<T>* p_node) {
+void parseFieldSequence(std::istream& is, Node<T>* p_node, size_t& count) {
 	skipWs(is);
 	if (!isalpha(next(is))) {
 		error("expected: field name");
@@ -54,7 +54,7 @@ void parseFieldSequence(std::istream& is, Node<T>* p_node) {
 	} else if (!fieldName.compare("left")) {
 		skipWs(is);
 		if (next(is) == '{' || next(is) == 'n') {
-			parseRbNode(is, &p_node->left);
+			parseRbNode(is, &p_node->left, count);
 
 			if (p_node->left != NULL) {
 				p_node->left->parent = p_node;
@@ -65,7 +65,7 @@ void parseFieldSequence(std::istream& is, Node<T>* p_node) {
 	} else if (!fieldName.compare("right")) {
 		skipWs(is);
 		if (next(is) == '{' || next(is) == 'n') {
-			parseRbNode(is, &p_node->right);
+			parseRbNode(is, &p_node->right, count);
 
 			if (p_node->right != NULL) {
 				p_node->right->parent = p_node;
@@ -81,20 +81,21 @@ void parseFieldSequence(std::istream& is, Node<T>* p_node) {
 	if (next(is) == ',') {
 		read(is); // ,
 
-		parseFieldSequence(is, p_node);
+		parseFieldSequence(is, p_node, count);
 	}
 
 	string field = readWord(is);
 }
 
 template<typename T>
-void parseRbNode(std::istream& is, Node<T>** pp_node) {
+void parseRbNode(std::istream& is, Node<T>** pp_node, size_t& count) {
 	skipWs(is);
 	if (next(is) == '{') {
 		read(is); // {
 
 		*pp_node = new Node<T>();
-		parseFieldSequence(is, *pp_node);
+		++count;
+		parseFieldSequence(is, *pp_node, count);
 
 		skipWs(is);
 		if (next(is) != '}') {
