@@ -47,6 +47,30 @@ struct Node {
 };
 
 template <typename T>
+Node<T>* copyNode(const Node<T>* rhs) {
+	if (rhs == NULL) {
+		return NULL;
+	}
+
+	Node<T>* result = new Node<T>;
+
+	result->color = rhs->color;
+	result->key = rhs->key;
+
+	if (rhs->left != NULL) {
+		result->left = copyNode(rhs->left);
+		result->left->parent = result;
+	}
+
+	if (rhs->right != NULL) {
+		result->right = copyNode(rhs->right);
+		result->right->parent = result;
+	}
+
+	return result;
+}
+
+template <typename T>
 void leftRotate(Node<T>** pp_root, Node<T>* p_x) {
 	Node<T>* p_y = p_x->right;
 
@@ -94,6 +118,146 @@ void rightRotate(Node<T>** pp_root, Node<T>* p_y) {
 
 	p_x->right= p_y;
 	p_y->parent = p_x;
+}
+
+template <typename T>
+void rbDelete(Node<T>** pp_root, Node<T>* p_z) {
+	Node<T>* p_y = NULL;
+	if (p_z->left == NULL || p_z->right == NULL) {
+		p_y = p_z;
+	} else {
+		p_y = treeSuccessor(p_z);
+	}
+
+	Node<T>* p_x = NULL;
+	if (p_y->left != NULL) {
+		p_x = p_y->left;
+	} else {
+		p_x = p_y->right;
+	}
+
+	Node<T>* p_x_parent = NULL;
+	if (p_x != NULL) {
+		p_x->parent = p_x_parent = p_y->parent;
+	} else {
+		p_x_parent = p_y->parent;
+	}
+
+	if (p_y->parent == NULL) {
+		*pp_root = p_x;
+	} else {
+		if (p_y == p_y->parent->left){
+			p_y->parent->left = p_x;
+		} else {
+			p_y->parent->right = p_x;
+		}
+	}
+
+	if (p_y != p_z) {
+		p_z->key = p_y->key;
+	}
+
+	if (p_y->color == BLACK) {
+		rbDeleteFixup(pp_root, p_x, p_x_parent);
+	}
+
+//	return p_y;
+}
+
+template <typename T>
+void rbDeleteFixup(Node<T>** root, Node<T>* x, Node<T>* x_parent) {
+	while (x != *root && color(x) == BLACK) {
+		if (x == x_parent->left) {
+			Node<T>* w = NULL;
+
+			w = x_parent->right;
+
+			if (color(w) == RED) {
+				w->color = BLACK;
+				x_parent->color = RED;
+				leftRotate(root, x_parent);
+				w = x_parent->right;
+			}
+
+			if (color(w->left)== BLACK && color(w->right) == BLACK) {
+				w->color = RED;
+				x = x_parent;
+			} else {
+				if (color(w->right) == BLACK) {
+					w->left->color = BLACK;
+					w->color = RED;
+
+					rightRotate(root, w);
+					w = x_parent->right;
+				}
+
+				w->color = x_parent->color;
+				x_parent->color = BLACK;
+				w->right->color = BLACK;
+				leftRotate(root, x_parent);
+				x = *root;
+			}
+		} else {
+			Node<T>* w = NULL;
+
+			w = x_parent->left;
+
+			if (color(w) == RED) {
+				w->color = BLACK;
+				x_parent->color = RED;
+				rightRotate(root, x_parent);
+				w = x_parent->left;
+			}
+
+			if (color(w->left)== BLACK && color(w->right) == BLACK) {
+				w->color = RED;
+				x = x_parent;
+			} else {
+				if (color(w->right) == BLACK) {
+					w->left->color = BLACK;
+					w->color = RED;
+
+					leftRotate(root, w);
+					w = x_parent->left;
+				}
+
+				w->color = x_parent->color;
+				x_parent->color = BLACK;
+				w->left->color = BLACK;
+				rightRotate(root, x_parent);
+				x = *root;
+			}
+		}
+	}
+
+	if (x != NULL) {
+		x->color = BLACK;
+	}
+}
+
+template <typename T>
+Node<T>* treeMinimum(Node<T>* p_x) {
+	while (p_x->left != NULL) {
+		p_x = p_x->left;
+	}
+
+	return p_x;
+}
+
+template <typename T>
+Node<T>* treeSuccessor(Node<T>* p_x) {
+	if (p_x->right != NULL) {
+		return treeMinimum(p_x->right);
+	}
+
+	Node<T>* p_y = p_x->parent;
+
+	while (p_y != NULL && p_x == p_y->right) {
+		p_x = p_y;
+		p_y = p_y->parent;
+	}
+
+	return p_y;
 }
 
 template <typename T>

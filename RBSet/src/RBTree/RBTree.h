@@ -26,6 +26,10 @@ public:
 	RBTree() : p_root(NULL), count(0) {
 	}
 
+	RBTree(const RBTree& rhs) : count (rhs.count) {
+		p_root = copyNode(rhs.p_root);
+	}
+
 	RBTree(istream& os);
 
 	void put(const T& key);
@@ -39,6 +43,8 @@ public:
 	Iterator begin();
 	Iterator end();
 	Iterator find(const T& key);
+
+	void erase(const T& key);
 
 	class Iterator {
 		friend Iterator RBTree<T>::begin();
@@ -93,8 +99,10 @@ void RBTree<T>::put(const T& key) {
 template <typename T>
 typename RBTree<T>::Iterator RBTree<T>::begin() {
 	Node<T>* p_node = p_root;
-	while (p_node->left != NULL) {
-		p_node = p_node->left;
+	if (p_node != NULL) {
+		while (p_node->left != NULL) {
+			p_node = p_node->left;
+		}
 	}
 
 	return Iterator(p_node, p_root);
@@ -114,6 +122,19 @@ typename RBTree<T>::Iterator RBTree<T>::find(const T& key) {
 	}
 
 	return Iterator(p_node, p_root);
+}
+
+template <typename T>
+void RBTree<T>::erase(const T& key) {
+	Node<T>* p_node = p_root;
+
+	while (p_node != NULL && p_node->key != key) {
+		p_node = p_node->key > key ? p_node->left : p_node->right;
+	}
+
+	if (p_node != NULL) {
+		rbDelete(&p_root, p_node);
+	}
 }
 
 template <typename T>
@@ -175,7 +196,7 @@ typename RBTree<T>::Iterator& RBTree<T>::Iterator::operator--() {
 
 template <typename T>
 T& RBTree<T>::Iterator::operator*() {
-	// todo NULL dereferencing
+	// todo NULL dereferencing exception
 	return p_node->key;
 }
 
