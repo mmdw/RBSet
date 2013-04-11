@@ -23,6 +23,5 @@ namespace RBSetTest
 
 			Assert::AreEqual(set.size(), static_cast<size_t>(3));
 		}
-
 	};
 }
