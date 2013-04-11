@@ -1,3 +1,7 @@
+RBSet/Debug
+RBSetTest/ipch
+*.sdf
+
 # Compiled Object files
 *.slo
 *.lo
