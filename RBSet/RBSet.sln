@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RBSet", "RBSet.vcxproj", "{8615E976-5719-44FB-B8CF-477E45ECFD24}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RBSetTest", "..\RBSetTest\RBSetTest.vcxproj", "{65286DBA-73F3-4027-B6BD-055B5E329FC9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8615E976-5719-44FB-B8CF-477E45ECFD24}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8615E976-5719-44FB-B8CF-477E45ECFD24}.Debug|Win32.Build.0 = Debug|Win32
+		{8615E976-5719-44FB-B8CF-477E45ECFD24}.Release|Win32.ActiveCfg = Release|Win32
+		{8615E976-5719-44FB-B8CF-477E45ECFD24}.Release|Win32.Build.0 = Release|Win32
+		{65286DBA-73F3-4027-B6BD-055B5E329FC9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{65286DBA-73F3-4027-B6BD-055B5E329FC9}.Debug|Win32.Build.0 = Debug|Win32
+		{65286DBA-73F3-4027-B6BD-055B5E329FC9}.Release|Win32.ActiveCfg = Release|Win32
+		{65286DBA-73F3-4027-B6BD-055B5E329FC9}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
