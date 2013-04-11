@@ -8,7 +8,7 @@
 #pragma once
 
 #include <ostream>
-#include "RBNode.h"
+#include "RBNodeParser.h"
 
 using std::ostream;
 using std::istream;
@@ -44,7 +44,7 @@ namespace Tree {
 
 	template<typename T>
 	RBTree<T>::RBTree(istream& is) : p_root(NULL), count(0) {
-		parseRbNode(is, &p_root, count);
+		RBNodeParser(is).parseRbNode(&p_root, count);
 	}
 
 	template<typename T>

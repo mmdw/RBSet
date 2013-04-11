@@ -1,8 +1,10 @@
 #include <iostream>
 #include <sstream>
+#include <cassert>
+#include <list>
+#include <set>
 
-#include "util.h"
-#include "RBTree/RbParser.h"
+#include "RBTree/RBNodeParser.h"
 #include "RBTree/RBTree.h"
 #include "RBSet.h"
 
@@ -10,155 +12,54 @@ using namespace std;
 
 typedef Tree::Node<int> TreeNode;
 
-void testDebug() {
-	TreeNode* p_a = new TreeNode(13);
-	treeInsert(&p_a, 16);
-	treeInsert(&p_a, 10);
+template <typename T>
+list<list<T> > producePermutations(const std::set<T>& s) {
+	list<list<T> > result;
 
-	debug(p_a);
+	if (s.size() == 1) {
+		result.push_back(list<T>(s.begin(), s.end()));
+	} else {
+		for (typename set<T>::iterator it1 = s.begin(); it1 != s.end(); ++it1) {
+			set<T> ds(s);
+			ds.erase(*it1);
+
+			list<list<T> > p = producePermutations(ds);
+			for (typename list<list<T> >::iterator it2 = p.begin(); it2 != p.end(); ++it2) {
+				it2->push_front(*it1);
+			}
+
+			result.insert(result.end(), p.begin(), p.end());
+		}
+	}
+
+	return result;
 }
 
-void testRotate() {
-	TreeNode* p_a = new TreeNode(5);
-	checkParent(p_a);
+template <typename T>
+void checkParent(Tree::Node<T>* node) {
+	if (node != NULL) {
+		if (node->left != NULL) {
+			assert(node->left->parent == node);
+			checkParent(node->left);
+		}
 
-	treeInsert(&p_a, 4);
-	treeInsert(&p_a, 7);
-	treeInsert(&p_a, 6);
-	treeInsert(&p_a, 8);
-
-	debug(p_a);
-	rightRotate(&p_a, p_a);
-	checkParent(p_a);
-
-	debug(p_a);
-	leftRotate(&p_a, p_a);
-	checkParent(p_a);
-
-	debug(p_a);
-
-	checkParent(p_a);
+		if (node->right != NULL) {
+			assert(node->right->parent == node);
+			checkParent(node->right);
+		}
+	}
 }
-
-void testRbInsert() {
-	TreeNode* p_a = NULL;
-
-	rbTreeInsert(&p_a, 6);
-	debug(p_a);
-
-	rbTreeInsert(&p_a, 7);
-	debug(p_a);
-
-	rbTreeInsert(&p_a, 10);
-	debug(p_a);
-
-	rbTreeInsert(&p_a, 11);
-	debug(p_a);
-
-	rbTreeInsert(&p_a, 12);
-	debug(p_a);
-
-	rbTreeInsert(&p_a, 8);
-	debug(p_a);
-
-	rbTreeInsert(&p_a, 9);
-	debug(p_a);
-
-	rbTreeInsert(&p_a, 3);
-	debug(p_a);
-
-	rbTreeInsert(&p_a, 4);
-	debug(p_a);
-
-	rbTreeInsert(&p_a, 2);
-	debug(p_a);
-}
-
 void testParser() {
 	istringstream iss("{key: 13, color: red, left:null, right : {key: 99, color: red, left: {key: 77}}}");
 	Tree::Node<int> * p_node = NULL;
 	size_t count = 0;
 
-	Tree::parseRbNode(iss, &p_node, count);
+	Tree::RBNodeParser p(iss);
+	p.parseRbNode(&p_node, count);
 	assert(count == 3);
 
 	p_node->serialize(std::cout, 0);
 }
-
-//void testIterator() {
-//	RBTree<int> tree;
-//	tree.put(1);
-//	tree.put(4);
-//	tree.put(2);
-//	tree.put(3);
-//
-//	RBTree<int>::Iterator iter = tree.begin();
-//	cout << *iter << std::endl; // 1
-//	++iter;
-//
-//	cout << *iter << std::endl; // 2
-//	++iter;
-//
-//	cout << *iter << std::endl; // 3
-//	++iter;
-//
-//	cout << *iter << std::endl; // 4
-//	++iter;
-//
-//	cout << "---" << std::endl;
-//
-//	--iter;
-//	cout << *iter << std::endl; // 4
-//
-//	--iter;
-//	cout << *iter << std::endl; // 3
-//
-//	--iter;
-//	cout << *iter << std::endl; // 2
-//
-//	--iter;
-//	cout << *iter << std::endl; // 1
-//}
-
-//void testIteratorComparsion() {
-//	RBTree<int> tree;
-//	tree.put(5);
-//	tree.put(6);
-//	tree.put(7);
-//	tree.put(3);
-//	tree.put(2);
-//	tree.put(1);
-//	tree.put(4);
-//
-//	// forward
-//	for (RBTree<int>::Iterator it = tree.begin(); it != tree.end(); ++it) {
-//		cout << *it << " ";
-//	}
-//	cout << endl;
-//
-//	// backward
-//	RBTree<int>::Iterator it = tree.end();
-//	while (it != tree.begin()) {
-//		--it;
-//		cout << *it << " ";
-//	}
-//	cout << endl;
-//}
-//
-//void testIteratorFind() {
-//	RBTree<int> tree;
-//	tree.put(5);
-//	tree.put(6);
-//	tree.put(7);
-//	tree.put(3);
-//	tree.put(2);
-//	tree.put(1);
-//	tree.put(4);
-//
-//	assert(*tree.find(6) == 6);
-//	assert(*tree.find(2) == 2);
-//	assert(tree.find(42) == tree.end());
-//}
 
 void testRepeatedInsert() {
 	Tree::RBTree<int> tree;
@@ -174,25 +75,6 @@ void testRepeatedInsert() {
 
 	tree.serialize(cout);
 }
-
-//void testRemove() {
-//	RBTree<int> tree;
-//	tree.put(3);
-//	tree.put(2);
-//	tree.put(1);
-//	tree.put(4);
-//
-//	tree.erase(1);
-//	tree.erase(2);
-//	tree.erase(4);
-//	tree.erase(3);
-//
-//	tree.serialize(cout);
-//	for (RBTree<int>::Iterator it = tree.begin(); it != tree.end(); ++it) {
-//		cout << *it << " ";
-//	}
-//	cout << endl;
-//}
 
 void testInsertPermutations() {
 	set<int> s;
@@ -221,10 +103,6 @@ void testCopy() {
 
 	Tree::RBTree<int> tree1(tree);
 	assert(tree1.size() == tree.size());
-//	assert(tree1.find(1) != tree1.end());
-//	assert(tree1.find(2) != tree1.end());
-//	assert(tree1.find(3) != tree1.end());
-//	assert(tree1.find(4) != tree1.end());
 }
 
 

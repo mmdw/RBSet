@@ -1,10 +1,3 @@
-/*
- * rbtree.h
- *
- *  Created on: 02.03.2013
- *      Author: user
- */
-
 #pragma once
 
 #include <algorithm>
@@ -17,9 +10,6 @@ namespace Tree {
 	enum NodeColor {
 		RED, BLACK
 	};
-
-	ostream& operator<<(ostream& os, const NodeColor& color);
-	void newline(ostream& os, int tabs);
 
 	template <typename T>
 	struct Node {
@@ -160,8 +150,6 @@ namespace Tree {
 		if (p_y->color == BLACK) {
 			rbDeleteFixup(pp_root, p_x, p_x_parent);
 		}
-
-	//	return p_y;
 	}
 
 	template <typename T>
@@ -367,16 +355,23 @@ namespace Tree {
 
 	template<typename T>
 	void Node<T>::serialize(ostream& os, int tabs) {
+		std::string newline;
+		newline += '\n';
+
+		for (int i = 0; i < 2 * tabs; ++i) {
+			newline += ' ';
+		}
+
 		++tabs;
 
 		os << "{";
-		newline(os, tabs);
+		os << newline;
 
 		os << "key: " << key << ",";
-		newline(os, tabs );
+		os << newline;
 
-		os << "color: " << color << ",";
-		newline(os, tabs);
+		os << "color: " << (color == BLACK ? "'black'" : "'red'") << ",";
+		os << newline;
 
 		os << "left: ";
 
@@ -388,7 +383,7 @@ namespace Tree {
 
 		os << ",";
 
-		newline(os, tabs);
+		os << newline;
 		os << "right: ";
 
 		if (right == NULL) {
@@ -398,7 +393,7 @@ namespace Tree {
 		}
 
 		--tabs;
-		newline(os, tabs);
+		os << newline;
 		os << "}";
 	}
 }
