@@ -5,8 +5,7 @@
  *      Author: user
  */
 
-#ifndef PARSERUTIL_H_
-#define PARSERUTIL_H_
+#pragma once
 
 #include <istream>
 #include <string>
@@ -14,13 +13,16 @@
 using std::istream;
 using std::string;
 
-void error(const char* msg);
-char next(istream& is);
-char read(istream& is);
-bool hasNext(istream& is);
-string readWord(istream& is);
-string readNumber(istream& is);
+namespace Tree {
+	class ParserUtil {
+	public:
+		static void error(const char* msg);
+		static char next(istream& is);
+		static char read(istream& is);
+		static bool hasNext(istream& is);
+		static string readWord(istream& is);
+		static string readNumber(istream& is);
 
-void skipWs(istream& is);
-
-#endif /* PARSERUTIL_H_ */
+		static void skipWs(istream& is);
+	};
+}

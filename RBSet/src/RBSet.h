@@ -1,14 +1,7 @@
-/*
- * RBSet.h
- *
- *  Created on: 07.04.2013
- *      Author: user
- */
+#pragma once
 
-#ifndef RBSET_H_
-#define RBSET_H_
-#include "../interfaces/AbstractSet.h"
-#include "RBNode.h"
+#include "AbstractSet.h"
+#include "RBTree/RBNode.h"
 
 template <typename T>
 class RBSet : public AbstractSet<T> {
@@ -26,8 +19,9 @@ public:
 	AbstractIterator<T>* iterator();
 
 	~RBSet();
+
 private:
-	Node<T> * p_root;
+	Tree::Node<T> * p_root;
 	size_t count;
 
 	class RBSetIterator : public AbstractIterator<T> {
@@ -42,10 +36,10 @@ private:
 		T& item();
 
 	private:
-		Node<T>* p_node;
-		Node<T>* p_root;
+		Tree::Node<T>* p_node;
+		Tree::Node<T>* p_root;
 
-		RBSetIterator(Node<T>* p_node, Node<T>* p_root);
+		RBSetIterator(Tree::Node<T>* p_node, Tree::Node<T>* p_root);
 	};
 };
 
@@ -87,7 +81,7 @@ void RBSet<T>::serialize(ostream& os) {
 
 template<typename T>
 void RBSet<T>::remove(const T& value) {
-	Node<T>* p_node = p_root;
+	Tree::Node<T>* p_node = p_root;
 
 	while (p_node != NULL && p_node->key != value) {
 		p_node = p_node->key > value ? p_node->left : p_node->right;
@@ -106,7 +100,7 @@ size_t RBSet<T>::size() const {
 
 template<typename T>
 AbstractIterator<T>* RBSet<T>::iterator() {
-	Node<T>* p_node = p_root;
+	Tree::Node<T>* p_node = p_root;
 	if (p_node != NULL) {
 		while (p_node->left != NULL) {
 			p_node = p_node->left;
@@ -122,7 +116,7 @@ bool RBSet<T>::contains(const T& value) const {
 }
 
 template<typename T>
-RBSet<T>::RBSetIterator::RBSetIterator(Node<T>* p_node, Node<T>* p_root)
+RBSet<T>::RBSetIterator::RBSetIterator(Tree::Node<T>* p_node, Tree::Node<T>* p_root)
 	: p_node(p_node), p_root(p_root) {
 
 }
@@ -187,4 +181,3 @@ template<typename T>
 T& RBSet<T>::RBSetIterator::item() {
 	return p_node->key;
 }
-#endif /* RBSET_H_ */

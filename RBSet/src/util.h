@@ -1,12 +1,4 @@
-/*
- * util.h
- *
- *  Created on: 02.03.2013
- *      Author: user
- */
-
-#ifndef UTIL_H_
-#define UTIL_H_
+#pragma once
 
 #include "RBTree/RBNode.h"
 
@@ -19,13 +11,13 @@ using std::set;
 using std::list;
 
 template <typename T>
-void print_node(std::ostream& os, Node<T>* node) {
+void print_node(std::ostream& os, Tree::Node<T>* node) {
 	if (node == NULL) {
 		os << "nil";
 	} else {
 		os << "(" << node->key;
 
-		if (node->color == RED) {
+		if (node->color == Tree::RED) {
 			os << " -R- ";
 		} else {
 			os << " -B- ";
@@ -39,7 +31,7 @@ void print_node(std::ostream& os, Node<T>* node) {
 }
 
 template <typename T>
-void debug(Node<T>* root) {
+void debug(Tree::Node<T>* root) {
 	print_node(std::cout, root);
 	std::cout << std::endl;
 }
@@ -68,7 +60,7 @@ list<list<T> > producePermutations(const std::set<T>& s) {
 }
 
 template <typename T>
-void checkParent(Node<T>* node) {
+void checkParent(Tree::Node<T>* node) {
 	if (node != NULL) {
 		if (node->left != NULL) {
 			assert(node->left->parent == node);
@@ -81,5 +73,3 @@ void checkParent(Node<T>* node) {
 		}
 	}
 }
-
-#endif /* UTIL_H_ */

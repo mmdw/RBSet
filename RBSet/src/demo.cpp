@@ -4,11 +4,11 @@
 #include "util.h"
 #include "RBTree/RbParser.h"
 #include "RBTree/RBTree.h"
-#include "RBTree/RBSet.h"
+#include "RBSet.h"
 
 using namespace std;
 
-typedef Node<int> TreeNode;
+typedef Tree::Node<int> TreeNode;
 
 void testDebug() {
 	TreeNode* p_a = new TreeNode(13);
@@ -76,10 +76,10 @@ void testRbInsert() {
 
 void testParser() {
 	istringstream iss("{key: 13, color: red, left:null, right : {key: 99, color: red, left: {key: 77}}}");
-	Node<int> * p_node = NULL;
+	Tree::Node<int> * p_node = NULL;
 	size_t count = 0;
 
-	parseRbNode(iss, &p_node, count);
+	Tree::parseRbNode(iss, &p_node, count);
 	assert(count == 3);
 
 	p_node->serialize(std::cout, 0);
@@ -161,7 +161,7 @@ void testParser() {
 //}
 
 void testRepeatedInsert() {
-	RBTree<int> tree;
+	Tree::RBTree<int> tree;
 	tree.put(3);
 	tree.put(2);
 	tree.put(1);
@@ -203,7 +203,7 @@ void testInsertPermutations() {
 
 	list<list<int> > ps = producePermutations(s);
 	for (list<list<int> >::const_iterator it1 = ps.begin(); it1 != ps.end(); ++it1) {
-		RBTree<int> tree;
+		Tree::RBTree<int> tree;
 		for (list<int>::const_iterator it2 = it1->begin(); it2 != it1->end(); ++it2) {
 			tree.put(*it2);
 		}
@@ -213,13 +213,13 @@ void testInsertPermutations() {
 }
 
 void testCopy() {
-	RBTree<int> tree;
+	Tree::RBTree<int> tree;
 	tree.put(3);
 	tree.put(2);
 	tree.put(1);
 	tree.put(4);
 
-	RBTree<int> tree1(tree);
+	Tree::RBTree<int> tree1(tree);
 	assert(tree1.size() == tree.size());
 //	assert(tree1.find(1) != tree1.end());
 //	assert(tree1.find(2) != tree1.end());

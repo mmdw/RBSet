@@ -1,10 +1,3 @@
-/*
- * AbstractIterator.h
- *
- *  Created on: 07.04.2013
- *      Author: user
- */
-
 #pragma once
 
 template <typename T>
