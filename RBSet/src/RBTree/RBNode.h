@@ -10,14 +10,17 @@ namespace Tree {
 	enum NodeColor {
 		RED, BLACK
 	};
-
+			
 	template <typename T>
 	struct Node {
+		typedef std::allocator<Node> NodeAllocator;
+
 		T key;
 
-		Node* parent;
-		Node* left;
-		Node* right;
+		typename NodeAllocator::pointer parent;
+		typename NodeAllocator::pointer left;
+		typename NodeAllocator::pointer right;
+
 		NodeColor color;
 
 		Node(const T& key) :
@@ -29,31 +32,33 @@ namespace Tree {
 		}
 
 		~Node() {
-			delete left;
-			delete right;
+
 		}
 
 		void serialize(ostream& os, int tabs);
 	};
 
-	template <typename T>
-	Node<T>* copyNode(const Node<T>* rhs) {
+	template <typename T, typename ItemAlloc>
+	typename Node<T>::NodeAllocator::pointer 
+	copyNode(const Node<T>* rhs, typename Node<T>::NodeAllocator& nodeAlloc, ItemAlloc& itemAlloc) {
 		if (rhs == NULL) {
 			return NULL;
 		}
 
-		Node<T>* result = new Node<T>;
+		Node<T>::NodeAllocator::pointer result = nodeAlloc.allocate(1);
+		itemAlloc.construct(result, ItemAlloc::value_type());
+		
 
 		result->color = rhs->color;
 		result->key = rhs->key;
 
 		if (rhs->left != NULL) {
-			result->left = copyNode(rhs->left);
+			result->left = copyNode(rhs->left, nodeAlloc, itemAlloc);
 			result->left->parent = result;
 		}
 
 		if (rhs->right != NULL) {
-			result->right = copyNode(rhs->right);
+			result->right = copyNode(rhs->right, nodeAlloc, itemAlloc);
 			result->right->parent = result;
 		}
 
@@ -61,8 +66,8 @@ namespace Tree {
 	}
 
 	template <typename T>
-	void leftRotate(Node<T>** pp_root, Node<T>* p_x) {
-		Node<T>* p_y = p_x->right;
+	void leftRotate(typename Node<T>::NodeAllocator::pointer * pp_root, typename Node<T>::NodeAllocator::pointer p_x) {
+		Node<T>::NodeAllocator::pointer p_y = p_x->right;
 
 		p_x->right = p_y->left;
 		if (p_x->right != NULL) {
@@ -86,8 +91,8 @@ namespace Tree {
 	}
 
 	template <typename T>
-	void rightRotate(Node<T>** pp_root, Node<T>* p_y) {
-		Node<T>* p_x = p_y->left;
+	void rightRotate(typename Node<T>::NodeAllocator::pointer * pp_root, typename Node<T>::NodeAllocator::pointer p_y) {
+		typename Node<T>::NodeAllocator::pointer p_x = p_y->left;
 
 		p_y->left= p_x->right;
 		if (p_y->left != NULL) {
@@ -163,7 +168,7 @@ namespace Tree {
 				if (color(w) == RED) {
 					w->color = BLACK;
 					x_parent->color = RED;
-					leftRotate(root, x_parent);
+					leftRotate<T>(root, x_parent);
 					w = x_parent->right;
 				}
 
@@ -175,14 +180,14 @@ namespace Tree {
 						w->left->color = BLACK;
 						w->color = RED;
 
-						rightRotate(root, w);
+						rightRotate<T>(root, w);
 						w = x_parent->right;
 					}
 
 					w->color = x_parent->color;
 					x_parent->color = BLACK;
 					w->right->color = BLACK;
-					leftRotate(root, x_parent);
+					leftRotate<T>(root, x_parent);
 					x = *root;
 				}
 			} else {
@@ -193,7 +198,7 @@ namespace Tree {
 				if (color(w) == RED) {
 					w->color = BLACK;
 					x_parent->color = RED;
-					rightRotate(root, x_parent);
+					rightRotate<T>(root, x_parent);
 					w = x_parent->left;
 				}
 
@@ -205,14 +210,14 @@ namespace Tree {
 						w->left->color = BLACK;
 						w->color = RED;
 
-						leftRotate(root, w);
+						leftRotate<T>(root, w);
 						w = x_parent->left;
 					}
 
 					w->color = x_parent->color;
 					x_parent->color = BLACK;
 					w->left->color = BLACK;
-					rightRotate(root, x_parent);
+					rightRotate<T>(root, x_parent);
 					x = *root;
 				}
 			}
@@ -248,16 +253,32 @@ namespace Tree {
 		return p_y;
 	}
 
-	template <typename T>
-	Node<T>* treeInsert(Node<T>** pp_root, const T& value) {
+	template <typename T, typename NodeAlloc, typename ItemAlloc>
+	typename NodeAlloc::pointer treeNewNode(const T& value,
+		NodeAlloc& nodeAlloc, ItemAlloc& itemAlloc) {
+
+		ItemAlloc::pointer item = itemAlloc.allocate(1);
+		itemAlloc.construct(item, ItemAlloc::value_type(value));
+
+		NodeAlloc::pointer node = nodeAlloc.allocate(1);
+		nodeAlloc.construct(node, NodeAlloc::value_type(*item));
+
+		return node;
+	}
+
+	template <typename T, typename ItemAlloc>
+	typename Node<T>::NodeAllocator::pointer treeInsert(
+		typename Node<T>::NodeAllocator::pointer * pp_root, const T& value, 
+		typename Node<T>::NodeAllocator& nodeAlloc, ItemAlloc& itemAlloc) {
+
 		if (*pp_root == NULL) {
-			*pp_root = new Node<T>(value);
+			*pp_root = treeNewNode(value, nodeAlloc, itemAlloc);
 
 			return *pp_root;
 		}
 
-		Node<T>** pp_node = pp_root;
-		Node<T>* p_parent = NULL;
+		Node<T>::NodeAllocator::pointer * pp_node = pp_root;
+		Node<T>::NodeAllocator::pointer p_parent = NULL;
 
 		while (*pp_node != NULL) {
 			if ((*pp_node)->key == value) {
@@ -266,14 +287,14 @@ namespace Tree {
 
 			p_parent = *pp_node;
 
-			if (value < (**pp_node).key) {
-				pp_node = &((**pp_node).left);
+			if (value < (*pp_node)->key) {
+				pp_node = &((*pp_node)->left);
 			} else {
-				pp_node = &((**pp_node).right);
+				pp_node = &((*pp_node)->right);
 			}
 		}
 
-		*pp_node = new Node<T>(value);
+		*pp_node = treeNewNode(value, nodeAlloc, itemAlloc);
 		(*pp_node)->parent = p_parent;
 
 		return *pp_node;
@@ -288,9 +309,11 @@ namespace Tree {
 		return node->color;
 	}
 
-	template <typename T>
-	bool rbTreeInsert(Node<T>** pp_root, const T& key) {
-		Node<T>* x = treeInsert(pp_root, key);
+	template <typename T, typename ItemAlloc>
+	bool rbTreeInsert(typename Node<T>::NodeAllocator::pointer * pp_root, const T& key,
+		typename Node<T>::NodeAllocator& nodeAlloc, ItemAlloc& itemAlloc) {
+
+		Node<T>::NodeAllocator::pointer x = treeInsert(pp_root, key, nodeAlloc, itemAlloc);
 
 		if (x == NULL) {
 			return false;
@@ -300,7 +323,7 @@ namespace Tree {
 
 		while (x != *pp_root && x->parent->color == RED) {
 			if (x->parent == x->parent->parent->left) {
-				Node<T>* y = x->parent->parent->right;
+				Node<T>::NodeAllocator::pointer y = x->parent->parent->right;
 
 				if (color(y) == RED) {
 					x->parent->color = BLACK;
@@ -310,7 +333,7 @@ namespace Tree {
 					x = x->parent->parent;
 				} else if (x == x->parent->right) {
 					x = x->parent;
-					leftRotate(pp_root, x);
+					leftRotate<T>(pp_root, x);
 				}
 
 				if (x->parent != NULL) {
@@ -319,11 +342,11 @@ namespace Tree {
 					if (x->parent->parent != NULL) {
 						x->parent->parent->color = RED;
 
-						rightRotate(pp_root, x->parent->parent);
+						rightRotate<T>(pp_root, x->parent->parent);
 					}
 				}
 			} else {
-				Node<T>* y = x->parent->parent->left;
+				Node<T>::NodeAllocator::pointer y = x->parent->parent->left;
 
 				if (color(y) == RED) {
 					x->parent->color = BLACK;
@@ -333,7 +356,7 @@ namespace Tree {
 					x = x->parent->parent;
 				} else if (x == x->parent->left) {
 					x = x->parent;
-					rightRotate(pp_root, x);
+					rightRotate<T>(pp_root, x);
 				}
 
 				if (x->parent != NULL) {
@@ -342,15 +365,32 @@ namespace Tree {
 					if (x->parent->parent != NULL) {
 						x->parent->parent->color = RED;
 
-						leftRotate(pp_root, x->parent->parent);
+						leftRotate<T>(pp_root, x->parent->parent);
 					}
-				}
+				}	
 			}
 		}
 
 		(*pp_root)->color = BLACK;
 
 		return true;
+	}
+
+	template <typename T, typename ItemAlloc>
+	void destroy(typename Node<T>::NodeAllocator::pointer& p_node, 
+		typename Node<T>::NodeAllocator& nodeAlloc, ItemAlloc& itemAlloc) {
+
+		if (p_node != NULL) {
+			if (p_node->left != NULL) {
+				destroy<T>(p_node->left, nodeAlloc, itemAlloc);
+			}
+
+			if (p_node->right != NULL) {
+				destroy<T>(p_node->right, nodeAlloc, itemAlloc);
+			}
+		}
+
+		nodeAlloc.destroy(p_node);
 	}
 
 	template<typename T>
