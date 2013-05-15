@@ -1,13 +1,12 @@
 #pragma once
 
 #include <memory>
-
 #include <iostream>
 
 #include "AbstractSet.h"
 #include "RBTree/RBNode.h"
 
-template <typename T, class Allocator = std::allocator<T> >
+template <typename T>
 class RBSet : public AbstractSet<T> {
 public:
 	RBSet();
@@ -26,11 +25,9 @@ public:
 
 private:
 	typedef Tree::Node<T> TreeNode;
-
-	Allocator itemAlloc;
-	typename TreeNode::NodeAllocator nodeAlloc;
 	
-	typename TreeNode::NodeAllocator::pointer p_root;
+	ItemArray<TreeNode> ia;
+	typename ItemArray<TreeNode>::ItemId p_root;
 	size_t count;
 
 	class RBSetIterator : public AbstractIterator<T> {
@@ -45,150 +42,155 @@ private:
 		T& item();
 
 	private:
-		Tree::Node<T>* p_node;
-		Tree::Node<T>* p_root;
+		typename ItemArray<TreeNode>::ItemId p_node;
+		typename ItemArray<TreeNode>::ItemId p_root;
+		ItemArray<TreeNode>& ia;
 
-		RBSetIterator(Tree::Node<T>* p_node, Tree::Node<T>* p_root);
+		RBSetIterator(typename ItemArray<TreeNode>::ItemId p_node,
+				      typename ItemArray<TreeNode>::ItemId p_root,
+				      ItemArray<TreeNode>& ia);
 	};
 };
 
-template<typename T, class A>
-RBSet<T, A>::RBSet() : p_root(NULL), count(0) {
+template<typename T>
+RBSet<T>::RBSet() : p_root(ItemArray<TreeNode>::null), count(0) {
 
 }
 
-template<typename T, typename A>
-RBSet<T, A>::RBSet(std::istream& is) : p_root(NULL), count(0) {
+template<typename T>
+RBSet<T>::RBSet(std::istream& is) : p_root(TreeNode::null), count(0) {
 	parseRbNode(is, &p_root, count);
 }
 
-template<typename T, typename A>
-RBSet<T, A>::RBSet(const RBSet& rhs) : count(rhs.count) {
-	p_root = copyNode(rhs.p_root, nodeAlloc, itemAlloc);
+template<typename T>
+RBSet<T>::RBSet(const RBSet& rhs) : count(rhs.count) {
+	p_root = copyNode(rhs.p_root, ia);
 }
 
-template<typename T, typename A>
-RBSet<T, A>::~RBSet() {
-	if (p_root != NULL) {
-		Tree::destroy<T>(p_root, nodeAlloc, itemAlloc);
+template<typename T>
+RBSet<T>::~RBSet() {
+	if (p_root != ItemArray<TreeNode>::null) {
+		Tree::destroy<TreeNode>(p_root, ia);
 	}
 }
 
-template<typename T, typename A>
-void RBSet<T, A>::put(const T& value) {
-	if (rbTreeInsert(&p_root, value, nodeAlloc, itemAlloc)) {
+template<typename T>
+void RBSet<T>::put(const T& value) {
+	if (rbTreeInsert(&p_root, value, ia)) {
 		count++;
 	}
 }
 
-template<typename T, typename A>
-void RBSet<T, A>::serialize(ostream& os) {
-	if (p_root == qNULL) {
+template<typename T>
+void RBSet<T>::serialize(ostream& os) {
+	if (p_root == ItemArray<TreeNode>::null) {
 		os << "null";
 	} else {
-		p_root->serialize(os, 0);
+		ia[p_root].serialize(os, 0, ia);
 	}
 }
 
-template<typename T, typename A>
-void RBSet<T, A>::remove(const T& value) {
-	Tree::Node<T>* p_node = p_root;
+template<typename T>
+void RBSet<T>::remove(const T& value) {
+	typename ItemArray<TreeNode>::ItemId p_node = p_root;
 
-	while (p_node != NULL && p_node->key != value) {
-		p_node = p_node->key > value ? p_node->left : p_node->right;
+	while (p_node != ItemArray<TreeNode>::null && ia[p_node].key != value) {
+		p_node = ia[p_node].key > value ? ia[p_node].left : ia[p_node].right;
 	}
 
-	if (p_node != NULL) {
-		rbDelete(&p_root, p_node);
+	if (p_node != ItemArray<TreeNode>::null) {
+		rbDelete(&p_root, p_node, ia);
 		--count;
 	}
 }
 
-template<typename T, typename A>
-size_t RBSet<T, A>::size() const {
+template<typename T>
+size_t RBSet<T>::size() const {
 	return count;
 }
 
-template<typename T, typename A>
-AbstractIterator<T>* RBSet<T, A>::iterator() {
-	Tree::Node<T>* p_node = p_root;
-	if (p_node != NULL) {
-		while (p_node->left != NULL) {
-			p_node = p_node->left;
+template<typename T>
+AbstractIterator<T>* RBSet<T>::iterator() {
+	typename ItemArray<TreeNode>::ItemId p_node = p_root;
+	if (p_node != ItemArray<TreeNode>::null) {
+		while (ia[p_node].left != ItemArray<TreeNode>::null) {
+			p_node = ia[p_node].left;
 		}
 	}
 
-	return new RBSetIterator(p_node, p_root);
+	return new RBSetIterator(p_node, p_root, ia);
 }
 
-template<typename T, typename A>
-bool RBSet<T, A>::contains(const T& value) const {
+template<typename T>
+bool RBSet<T>::contains(const T& value) const {
 	return false;
 }
 
-template<typename T, typename A>
-RBSet<T, A>::RBSetIterator::RBSetIterator(TreeNode * p_node, TreeNode* p_root)
-	: p_node(p_node), p_root(p_root) {
+template<typename T>
+RBSet<T>::RBSetIterator::RBSetIterator(typename ItemArray<TreeNode>::ItemId p_node,
+									   typename ItemArray<TreeNode>::ItemId p_root,
+									   ItemArray<TreeNode>& ia)
+	: p_node(p_node), p_root(p_root), ia(ia) {
 
 }
 
-template<typename T, typename A>
-void RBSet<T, A>::RBSetIterator::next() {
-	if (p_node == NULL) {
+template<typename T>
+void RBSet<T>::RBSetIterator::next() {
+	if (p_node == ItemArray<TreeNode>::null) {
 		std::cerr << "end reached";
 		exit(-1);
 	}
 
-	if (p_node->right != NULL) {
-		p_node = p_node->right;
+	if (ia[p_node].right != ItemArray<TreeNode>::null) {
+		p_node = ia[p_node].right;
 
-		while (p_node->left != NULL) {
-			p_node = p_node->left;
+		while (ia[p_node].left != ItemArray<TreeNode>::null) {
+			p_node = ia[p_node].left;
 		}
 	} else {
-		while (p_node->parent != NULL && p_node == p_node->parent->right) {
-			p_node = p_node->parent;
+		while (ia[p_node].parent != ItemArray<TreeNode>::null && p_node == ia[ia[p_node].parent].right) {
+			p_node = ia[p_node].parent;
 		}
 
-		p_node = p_node->parent;
+		p_node = ia[p_node].parent;
 	}
 }
 
-template<typename T, typename A>
-void RBSet<T, A>::RBSetIterator::prev() {
-	if (p_node == NULL && p_root == NULL) {
+template<typename T>
+void RBSet<T>::RBSetIterator::prev() {
+	if (p_node == ItemArray<TreeNode>::null && p_root == ItemArray<TreeNode>::null) {
 		std::cerr << "empty tree";
 		exit(-1);
 	}
 
-	if (p_node == NULL) {
+	if (p_node == ItemArray<TreeNode>::null) {
 		p_node = p_root;
-		while (p_node->right != NULL) {
-			p_node = p_node->right;
+		while (ia[p_node].right != ItemArray<TreeNode>::null) {
+			p_node = ia[p_node].right;
 		}
 	} else {
-		if (p_node->left != NULL) {
-			p_node = p_node->left;
+		if (ia[p_node].left != ItemArray<TreeNode>::null) {
+			p_node = ia[p_node].left;
 
-			while (p_node->right != NULL) {
-				p_node = p_node->right;
+			while (ia[p_node].right != ItemArray<TreeNode>::null) {
+				p_node = ia[p_node].right;
 			}
 		} else {
-			while (p_node->parent != NULL && p_node == p_node->parent->left) {
-				p_node = p_node->parent;
+			while (ia[p_node].parent != ItemArray<TreeNode>::null && p_node == ia[ia[p_node].parent].left) {
+				p_node = ia[p_node].parent;
 			}
 
-			p_node = p_node->parent;
+			p_node = ia[p_node].parent;
 		}
 	}
 }
 
-template<typename T, typename A>
-bool RBSet<T, A>::RBSetIterator::hasNext() {
-	return p_node != NULL;
+template<typename T>
+bool RBSet<T>::RBSetIterator::hasNext() {
+	return p_node != ItemArray<TreeNode>::null;
 }
 
-template<typename T, typename A>
-T& RBSet<T, A>::RBSetIterator::item() {
-	return p_node->key;
+template<typename T>
+T& RBSet<T>::RBSetIterator::item() {
+	return ia[p_node].key;
 }

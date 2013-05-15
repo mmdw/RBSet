@@ -1,16 +1,10 @@
-/*
- * parserUtil.h
- *
- *  Created on: 03.03.2013
- *      Author: user
- */
-
 #pragma once
 
 #include <string>
 #include <cstdlib>
 #include <sstream>
 
+#include "ItemArray.h"
 #include "RBNode.h"
 
 using std::istream;
@@ -22,7 +16,7 @@ namespace Tree {
 		RBNodeParser(istream& is);
 
 		template<typename T>
-		void parseRbNode(Node<T>** pp_node, size_t& count);
+		void parseRbNode(typename ItemArray<Node<T> >::ItemId * pp_node, size_t& count, ItemArray<Node<T> >& ia);
 
 	private:
 		istream& is;
@@ -37,7 +31,7 @@ namespace Tree {
 		void skipWs(istream& is);
 
 		template<typename T>
-		void parseFieldSequence(Node<T>* p_node, size_t& count);
+		void parseFieldSequence(typename ItemArray<Node<T> >::ItemId p_node, size_t& count, ItemArray<Node<T> >& ia);
 	};
 
 	RBNodeParser::RBNodeParser(istream& is) : is(is) {
@@ -45,14 +39,14 @@ namespace Tree {
 	}
 
 	template<typename T>
-	void RBNodeParser::parseRbNode(Node<T>** pp_node, size_t& count) {
+	void RBNodeParser::parseRbNode(typename ItemArray<Node<T> >::ItemId * pp_node, size_t& count, ItemArray<Node<T> >& ia) {
 		skipWs(is);
 		if (next(is) == '{') {
 			read(is); // {
 
-			*pp_node = new Node<T>();
+			*pp_node = ia.alloc(Node<T>());
 			++count;
-			parseFieldSequence(*pp_node, count);
+			parseFieldSequence(*pp_node, count, ia);
 
 			skipWs(is);
 			if (next(is) != '}') {
@@ -73,7 +67,7 @@ namespace Tree {
 	}
 
 	template<typename T>
-	void RBNodeParser::parseFieldSequence(Node<T>* p_node, size_t& count) {
+	void RBNodeParser::parseFieldSequence(typename ItemArray<Node<T> >::ItemId p_node, size_t& count, ItemArray<Node<T> >& ia) {
 		skipWs(is);
 		if (!isalpha(next(is))) {
 			error("expected: field name");
@@ -92,9 +86,9 @@ namespace Tree {
 
 			string color = readWord(is);
 			if (!color.compare("black")) {
-				p_node->color = BLACK;
+				ia[p_node].color = BLACK;
 			} else if (!color.compare("red")) {
-				p_node->color = RED;
+				ia[p_node].color = RED;
 			} else {
 				error("expected: red or black");
 			}
@@ -106,14 +100,14 @@ namespace Tree {
 			T key;
 			iss >> key;
 
-			p_node->key = key;
+			ia[p_node].key = key;
 		} else if (!fieldName.compare("left")) {
 			skipWs(is);
 			if (next(is) == '{' || next(is) == 'n') {
-				parseRbNode(&p_node->left, count);
+				parseRbNode(ia[p_node].left, count, ia);
 
-				if (p_node->left != NULL) {
-					p_node->left->parent = p_node;
+				if (ia[p_node].left != ItemArray<Node<T> >::null) {
+					ia[ia[p_node].left].parent = p_node;
 				}
 			} else {
 				error("expected: object");
@@ -121,10 +115,10 @@ namespace Tree {
 		} else if (!fieldName.compare("right")) {
 			skipWs(is);
 			if (next(is) == '{' || next(is) == 'n') {
-				parseRbNode(&p_node->right, count);
+				parseRbNode(ia[p_node].right, count, ia);
 
-				if (p_node->right != NULL) {
-					p_node->right->parent = p_node;
+				if (ia[p_node].right != ItemArray<Node<T> >::null) {
+					ia[ia[p_node].right].parent = p_node;
 				}
 			} else {
 				error("expected: object or null");
@@ -137,7 +131,7 @@ namespace Tree {
 		if (next(is) == ',') {
 			read(is); // ,
 
-			parseFieldSequence(p_node, count);
+			parseFieldSequence(p_node, count, ia);
 		}
 
 		string field = readWord(is);

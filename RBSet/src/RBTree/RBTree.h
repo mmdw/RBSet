@@ -9,6 +9,7 @@
 
 #include <ostream>
 #include "RBNodeParser.h"
+#include "ItemArray.h"
 
 using std::ostream;
 using std::istream;
@@ -18,15 +19,17 @@ namespace Tree {
 	template <typename T>
 	class RBTree {
 	protected:
-		Node<T> * p_root;
 		size_t count;
 
+		ItemArray<Node<T> > ia;
+		ItemArray<Node<T> >::ItemId p_root;
+
 	public:
-		RBTree() : p_root(NULL), count(0) {
+		RBTree() : p_root(ItemArray<Node<T> >::null), count(0) {
 		}
 
 		RBTree(const RBTree& rhs) : count (rhs.count) {
-			p_root = copyNode(rhs.p_root);
+			p_root = copyNode(rhs.p_root, ia);
 		}
 
 		RBTree(istream& os);
@@ -43,16 +46,16 @@ namespace Tree {
 	};
 
 	template<typename T>
-	RBTree<T>::RBTree(istream& is) : p_root(NULL), count(0) {
-		RBNodeParser(is).parseRbNode(&p_root, count);
+	RBTree<T>::RBTree(istream& is) : p_root(ItemArray<Node<T> >::null), count(0) {
+		RBNodeParser(is).parseRbNode(&p_root, count, ia);
 	}
 
 	template<typename T>
 	void RBTree<T>::serialize(ostream& os) {
-		if (p_root == NULL) {
+		if (p_root == ItemArray<Node<T> >::null) {
 			os << "null";
 		} else {
-			p_root->serialize(os, 0);
+			ia[p_root].serialize(os, 0, ia);
 		}
 	}
 
@@ -63,21 +66,21 @@ namespace Tree {
 
 	template <typename T>
 	void RBTree<T>::put(const T& key) {
-		if (rbTreeInsert(&p_root, key)) {
+		if (rbTreeInsert(&p_root, key, ia)) {
 			count++;
 		}
 	}
 
 	template <typename T>
 	void RBTree<T>::erase(const T& key) {
-		Node<T>* p_node = p_root;
+		ItemArray<Node<T> >::ItemId p_node = p_root;
 
-		while (p_node != NULL && p_node->key != key) {
-			p_node = p_node->key > key ? p_node->left : p_node->right;
+		while (p_node != ItemArray<Node<T> >::null && ia[p_node].key != key) {
+			p_node = ia[p_node].key > key ? ia[p_node].left : ia[p_node].right;
 		}
 
 		if (p_node != NULL) {
-			rbDelete(&p_root, p_node);
+			rbDelete(&p_root, p_node, ia);
 			--count;
 		}
 	}

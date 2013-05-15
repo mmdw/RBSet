@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ItemArray.h"
+
 #include <algorithm>
 #include <ostream>
 
@@ -13,388 +15,380 @@ namespace Tree {
 			
 	template <typename T>
 	struct Node {
-		typedef std::allocator<Node> NodeAllocator;
-
 		T key;
 
-		typename NodeAllocator::pointer parent;
-		typename NodeAllocator::pointer left;
-		typename NodeAllocator::pointer right;
+		typename ItemArray<Node<T> >::ItemId parent;
+		typename ItemArray<Node<T> >::ItemId left;
+		typename ItemArray<Node<T> >::ItemId right;
 
 		NodeColor color;
 
 		Node(const T& key) :
-			key(key), parent(NULL), left(NULL), right(NULL), color(BLACK) {
+			key(key),
+			parent(ItemArray<Node<T> >::null),
+			left(ItemArray<Node<T> >::null),
+			right(ItemArray<Node<T> >::null),
+			color(BLACK) {
 		}
 
 		Node() :
-			parent(NULL), left(NULL), right(NULL), color(BLACK) {
+			parent(ItemArray<Node<T> >::null),
+			left(ItemArray<Node<T> >::null),
+			right(ItemArray<Node<T> >::null),
+			color(BLACK) {
 		}
 
 		~Node() {
 
 		}
 
-		void serialize(ostream& os, int tabs);
+		void serialize(ostream& os, int tabs, ItemArray<Node<T> >& ia);
 	};
 
-	template <typename T, typename ItemAlloc>
+	template <typename T>
 	typename Node<T>::NodeAllocator::pointer 
-	copyNode(const Node<T>* rhs, typename Node<T>::NodeAllocator& nodeAlloc, ItemAlloc& itemAlloc) {
+	copyNode(const Node<T>* rhs, ItemArray< Node <T> >& ia) {
 		if (rhs == NULL) {
 			return NULL;
 		}
 
-		Node<T>::NodeAllocator::pointer result = nodeAlloc.allocate(1);
-		itemAlloc.construct(result, ItemAlloc::value_type());
-		
+		typename ItemArray<Node<T> >::ItemId result = ia.alloc(Node<T>());
 
-		result->color = rhs->color;
-		result->key = rhs->key;
+		ia[result].color = rhs->color;
+		ia[result].key   = rhs->key;
 
 		if (rhs->left != NULL) {
-			result->left = copyNode(rhs->left, nodeAlloc, itemAlloc);
-			result->left->parent = result;
+			ia[result].left = copyNode(rhs->left, ia);
+			ia[ia[result].left].parent = result;
 		}
 
 		if (rhs->right != NULL) {
-			result->right = copyNode(rhs->right, nodeAlloc, itemAlloc);
-			result->right->parent = result;
+			ia[result].right = copyNode(rhs->right, ia);
+			ia[ia[result].right].parent = result;
 		}
 
 		return result;
 	}
 
 	template <typename T>
-	void leftRotate(typename Node<T>::NodeAllocator::pointer * pp_root, typename Node<T>::NodeAllocator::pointer p_x) {
-		Node<T>::NodeAllocator::pointer p_y = p_x->right;
+	void leftRotate(unsigned * pp_root, unsigned p_x, ItemArray< Node<T> >& ia) {
+		unsigned p_y = ia[p_x].right;
 
-		p_x->right = p_y->left;
-		if (p_x->right != NULL) {
-			p_x->right->parent = p_x;
+		ia[p_x].right = ia[p_y].left;
+		if (ia[p_x].right != ia.null) {
+			ia[ia[p_x].right].parent = p_x;
 		}
 
-		p_y->parent = p_x->parent;
+		ia[p_y].parent = ia[p_x].parent;
 
-		if (p_x->parent != NULL) {
-			if (p_x == p_x->parent->left) {
-				p_x->parent->left = p_y;
+		if (ia[p_x].parent != ia.null) {
+			if (p_x == ia[ia[p_x].parent].left) {
+				ia[ia[p_x].parent].left = p_y;
 			} else {
-				p_x->parent->right = p_y;
+				ia[ia[p_x].parent].right = p_y;
 			}
 		} else {
 			(*pp_root) = p_y;
 		}
 
-		p_y->left = p_x;
-		p_x->parent = p_y;
+		ia[p_y].left = p_x;
+		ia[p_x].parent = p_y;
 	}
 
 	template <typename T>
-	void rightRotate(typename Node<T>::NodeAllocator::pointer * pp_root, typename Node<T>::NodeAllocator::pointer p_y) {
-		typename Node<T>::NodeAllocator::pointer p_x = p_y->left;
+	void rightRotate(unsigned * pp_root, unsigned p_y, ItemArray< Node<T> >& ia) {
+		unsigned p_x = ia[p_y].left;
 
-		p_y->left= p_x->right;
-		if (p_y->left != NULL) {
-			p_y->left->parent = p_y;
+		ia[p_y].left = ia[p_x].right;
+		if (ia[p_y].left != ia.null) {
+			ia[ia[p_y].left].parent = p_y;
 		}
 
-		p_x->parent = p_y->parent;
+		ia[p_x].parent = ia[p_y].parent;
 
-		if (p_y->parent != NULL) {
-			if (p_y == p_y->parent->right) {
-				p_y->parent->right = p_x;
+		if (ia[p_y].parent != ia.null) {
+			if (p_y == ia[ia[p_y].parent].right) {
+				ia[ia[p_y].parent].right = p_x;
 			} else {
-				p_y->parent->left = p_x;
+				ia[ia[p_y].parent].left = p_x;
 			}
 		} else {
 			(*pp_root) = p_x;
 		}
 
-		p_x->right= p_y;
-		p_y->parent = p_x;
+		ia[p_x].right= p_y;
+		ia[p_y].parent = p_x;
 	}
 
 	template <typename T>
-	void rbDelete(Node<T>** pp_root, Node<T>* p_z) {
-		Node<T>* p_y = NULL;
-		if (p_z->left == NULL || p_z->right == NULL) {
+	void rbDelete(typename ItemArray<Node<T> >::ItemId * pp_root,
+			      typename ItemArray<Node<T> >::ItemId p_z, ItemArray<Node<T> >& ia) {
+		unsigned p_y = ia.null;
+
+		if (ia[p_z].left == ia.null || ia[p_z].right == ia.null) {
 			p_y = p_z;
 		} else {
-			p_y = treeSuccessor(p_z);
+			p_y = treeSuccessor(p_z, ia);
 		}
 
-		Node<T>* p_x = NULL;
-		if (p_y->left != NULL) {
-			p_x = p_y->left;
+		unsigned p_x = ia.null;
+		if (ia[p_y].left != ia.null) {
+			p_x = ia[p_y].left;
 		} else {
-			p_x = p_y->right;
+			p_x = ia[p_y].right;
 		}
 
-		Node<T>* p_x_parent = NULL;
-		if (p_x != NULL) {
-			p_x->parent = p_x_parent = p_y->parent;
+		unsigned p_x_parent = ia.null;
+		if (p_x != ItemArray<Node<T> >::null) {
+			ia[p_x].parent = p_x_parent = ia[p_y].parent;
 		} else {
-			p_x_parent = p_y->parent;
+			p_x_parent = ia[p_y].parent;
 		}
 
-		if (p_y->parent == NULL) {
+		if (ia[p_y].parent == ia.null) {
 			*pp_root = p_x;
 		} else {
-			if (p_y == p_y->parent->left){
-				p_y->parent->left = p_x;
+			if (p_y == ia[ia[p_y].parent].left){
+				ia[ia[p_y].parent].left = p_x;
 			} else {
-				p_y->parent->right = p_x;
+				ia[ia[p_y].parent].right = p_x;
 			}
 		}
 
 		if (p_y != p_z) {
-			p_z->key = p_y->key;
+			ia[p_z].key = ia[p_y].key;
 		}
 
-		if (p_y->color == BLACK) {
-			rbDeleteFixup(pp_root, p_x, p_x_parent);
+		if (ia[p_y].color == BLACK) {
+			rbDeleteFixup(pp_root, p_x, p_x_parent, ia);
 		}
 	}
 
 	template <typename T>
-	void rbDeleteFixup(Node<T>** root, Node<T>* x, Node<T>* x_parent) {
-		while (x != *root && color(x) == BLACK) {
-			if (x == x_parent->left) {
-				Node<T>* w = NULL;
+	void rbDeleteFixup(unsigned * root, unsigned x, unsigned x_parent, ItemArray<Node<T> >& ia) {
+		while (x != *root && color(x, ia) == BLACK) {
+			if (x == ia[x_parent].left) {
+				unsigned w = ia.null;
 
-				w = x_parent->right;
+				w = ia[x_parent].right;
 
-				if (color(w) == RED) {
-					w->color = BLACK;
-					x_parent->color = RED;
-					leftRotate<T>(root, x_parent);
-					w = x_parent->right;
+				if (color(w, ia) == RED) {
+					ia[w].color = BLACK;
+					ia[x_parent].color = RED;
+					leftRotate<T>(root, x_parent, ia);
+					w = ia[x_parent].right;
 				}
 
-				if (color(w->left)== BLACK && color(w->right) == BLACK) {
-					w->color = RED;
+				if (color(ia[w].left, ia) == BLACK && color(ia[w].right, ia) == BLACK) {
+					ia[w].color = RED;
 					x = x_parent;
 				} else {
-					if (color(w->right) == BLACK) {
-						w->left->color = BLACK;
-						w->color = RED;
+					if (color(ia[w].right, ia) == BLACK) {
+						ia[ia[w].left].color = BLACK;
+						ia[w].color = RED;
 
-						rightRotate<T>(root, w);
-						w = x_parent->right;
+						rightRotate<T>(root, w, ia);
+						w = ia[x_parent].right;
 					}
 
-					w->color = x_parent->color;
-					x_parent->color = BLACK;
-					w->right->color = BLACK;
-					leftRotate<T>(root, x_parent);
+					ia[w].color = ia[x_parent].color;
+					ia[x_parent].color = BLACK;
+					ia[ia[w].right].color = BLACK;
+					leftRotate<T>(root, x_parent, ia);
 					x = *root;
 				}
 			} else {
-				Node<T>* w = NULL;
+				unsigned w = ia.null;
 
-				w = x_parent->left;
+				w = ia[x_parent].left;
 
-				if (color(w) == RED) {
-					w->color = BLACK;
-					x_parent->color = RED;
-					rightRotate<T>(root, x_parent);
-					w = x_parent->left;
+				if (color(w, ia) == RED) {
+					ia[w].color = BLACK;
+					ia[x_parent].color = RED;
+					rightRotate<T>(root, x_parent, ia);
+					w = ia[x_parent].left;
 				}
 
-				if (color(w->left)== BLACK && color(w->right) == BLACK) {
-					w->color = RED;
+				if (color(ia[w].left, ia) == BLACK && color(ia[w].right, ia) == BLACK) {
+					ia[w].color = RED;
 					x = x_parent;
 				} else {
-					if (color(w->right) == BLACK) {
-						w->left->color = BLACK;
-						w->color = RED;
+					if (color(ia[w].right, ia) == BLACK) {
+						ia[ia[w].left].color = BLACK;
+						ia[w].color = RED;
 
-						leftRotate<T>(root, w);
-						w = x_parent->left;
+						leftRotate<T>(root, w, ia);
+						w = ia[x_parent].left;
 					}
 
-					w->color = x_parent->color;
-					x_parent->color = BLACK;
-					w->left->color = BLACK;
-					rightRotate<T>(root, x_parent);
+					ia[w].color = ia[x_parent].color;
+					ia[x_parent].color = BLACK;
+					ia[ia[w].left].color = BLACK;
+					rightRotate<T>(root, x_parent, ia);
 					x = *root;
 				}
 			}
 		}
 
-		if (x != NULL) {
-			x->color = BLACK;
+		if (x != ia.null) {
+			ia[x].color = BLACK;
 		}
 	}
 
 	template <typename T>
-	Node<T>* treeMinimum(Node<T>* p_x) {
-		while (p_x->left != NULL) {
-			p_x = p_x->left;
+	unsigned treeMinimum(unsigned p_x, ItemArray<Node<T> >& ia) {
+		while (ia[p_x].left != ia.null) {
+			p_x = ia[p_x].left;
 		}
 
 		return p_x;
 	}
 
 	template <typename T>
-	Node<T>* treeSuccessor(Node<T>* p_x) {
-		if (p_x->right != NULL) {
-			return treeMinimum(p_x->right);
+	unsigned treeSuccessor(unsigned p_x, ItemArray<Node<T> >& ia) {
+		if (ia[p_x].right != ia.null) {
+			return treeMinimum(ia[p_x].right, ia);
 		}
 
-		Node<T>* p_y = p_x->parent;
+		unsigned p_y = ia[p_x].parent;
 
-		while (p_y != NULL && p_x == p_y->right) {
+		while (p_y != ia.null && p_x == ia[p_y].right) {
 			p_x = p_y;
-			p_y = p_y->parent;
+			p_y = ia[p_y].parent;
 		}
 
 		return p_y;
 	}
 
-	template <typename T, typename NodeAlloc, typename ItemAlloc>
-	typename NodeAlloc::pointer treeNewNode(const T& value,
-		NodeAlloc& nodeAlloc, ItemAlloc& itemAlloc) {
+	template <typename T>
+	unsigned treeNewNode(const T& value, ItemArray<Node<T> >& ia) {
 
-		ItemAlloc::pointer item = itemAlloc.allocate(1);
-		itemAlloc.construct(item, ItemAlloc::value_type(value));
-
-		NodeAlloc::pointer node = nodeAlloc.allocate(1);
-		nodeAlloc.construct(node, NodeAlloc::value_type(*item));
-
-		return node;
+		return ia.alloc(value);
 	}
 
-	template <typename T, typename ItemAlloc>
-	typename Node<T>::NodeAllocator::pointer treeInsert(
-		typename Node<T>::NodeAllocator::pointer * pp_root, const T& value, 
-		typename Node<T>::NodeAllocator& nodeAlloc, ItemAlloc& itemAlloc) {
+	template <typename T>
+	typename ItemArray<Node<T> >::ItemId treeInsert(
+		unsigned * pp_root, const T& value,
+		ItemArray<Node<T> >& ia) {
 
-		if (*pp_root == NULL) {
-			*pp_root = treeNewNode(value, nodeAlloc, itemAlloc);
+		if (*pp_root == ia.null) {
+			*pp_root = treeNewNode(value, ia);
 
 			return *pp_root;
 		}
 
-		Node<T>::NodeAllocator::pointer * pp_node = pp_root;
-		Node<T>::NodeAllocator::pointer p_parent = NULL;
+		unsigned * pp_node = pp_root;
+		unsigned p_parent = ia.null;
 
-		while (*pp_node != NULL) {
-			if ((*pp_node)->key == value) {
-				return NULL;
+		while (*pp_node != ia.null) {
+			if (ia[(*pp_node)].key == value) {
+				return ia.null;
 			}
 
 			p_parent = *pp_node;
 
-			if (value < (*pp_node)->key) {
-				pp_node = &((*pp_node)->left);
+			if (value < ia[(*pp_node)].key) {
+				pp_node = &(ia[(*pp_node)].left);
 			} else {
-				pp_node = &((*pp_node)->right);
+				pp_node = &(ia[(*pp_node)].right);
 			}
 		}
 
-		*pp_node = treeNewNode(value, nodeAlloc, itemAlloc);
-		(*pp_node)->parent = p_parent;
+		*pp_node = treeNewNode(value, ia);
+		ia[(*pp_node)].parent = p_parent;
 
 		return *pp_node;
 	}
 
 	template <typename T>
-	NodeColor color(Node<T>* node) {
-		if (node == NULL) {
+	NodeColor color(unsigned node, ItemArray<Node<T> >& ia) {
+		if (node == ia.null) {
 			return BLACK;
 		}
 
-		return node->color;
+		return ia[node].color;
 	}
 
-	template <typename T, typename ItemAlloc>
-	bool rbTreeInsert(typename Node<T>::NodeAllocator::pointer * pp_root, const T& key,
-		typename Node<T>::NodeAllocator& nodeAlloc, ItemAlloc& itemAlloc) {
+	template <typename T>
+	bool rbTreeInsert(unsigned * pp_root, const T& key, ItemArray<Node<T> >& ia) {
+		unsigned x = treeInsert(pp_root, key, ia);
 
-		Node<T>::NodeAllocator::pointer x = treeInsert(pp_root, key, nodeAlloc, itemAlloc);
-
-		if (x == NULL) {
+		if (x == ia.null) {
 			return false;
 		}
 
-		x->color = RED;
+		ia[x].color = RED;
 
-		while (x != *pp_root && x->parent->color == RED) {
-			if (x->parent == x->parent->parent->left) {
-				Node<T>::NodeAllocator::pointer y = x->parent->parent->right;
+		while (x != *pp_root && ia[ia[x].parent].color == RED) {
+			if (ia[x].parent == ia[ia[ia[x].parent].parent].left) {
+				unsigned y = ia[ia[ia[x].parent].parent].right;
 
-				if (color(y) == RED) {
-					x->parent->color = BLACK;
-					y->color = BLACK;
-					x->parent->parent->color = RED;
+				if (color(y, ia) == RED) {
+					ia[ia[x].parent].color = BLACK;
+					ia[y].color = BLACK;
+					ia[ia[ia[x].parent].parent].color = RED;
 
-					x = x->parent->parent;
-				} else if (x == x->parent->right) {
-					x = x->parent;
-					leftRotate<T>(pp_root, x);
+					x = ia[ia[x].parent].parent;
+				} else if (x == ia[ia[x].parent].right) {
+					x = ia[x].parent;
+					leftRotate<T>(pp_root, x, ia);
 				}
 
-				if (x->parent != NULL) {
-					x->parent->color = BLACK;
+				if (ia[x].parent != ia.null) {
+					ia[ia[x].parent].color = BLACK;
 
-					if (x->parent->parent != NULL) {
-						x->parent->parent->color = RED;
+					if (ia[ia[x].parent].parent != ia.null) {
+						ia[ia[ia[x].parent].parent].color = RED;
 
-						rightRotate<T>(pp_root, x->parent->parent);
+						rightRotate<T>(pp_root, ia[ia[x].parent].parent, ia);
 					}
 				}
 			} else {
-				Node<T>::NodeAllocator::pointer y = x->parent->parent->left;
+				unsigned y = ia[ia[ia[x].parent].parent].left;
 
-				if (color(y) == RED) {
-					x->parent->color = BLACK;
-					y->color = BLACK;
-					x->parent->parent->color = RED;
+				if (color(y, ia) == RED) {
+					ia[ia[x].parent].color = BLACK;
+					ia[y].color = BLACK;
+					ia[ia[ia[x].parent].parent].color = RED;
 
-					x = x->parent->parent;
-				} else if (x == x->parent->left) {
-					x = x->parent;
-					rightRotate<T>(pp_root, x);
+					x = ia[ia[x].parent].parent;
+				} else if (x == ia[ia[x].parent].left) {
+					x = ia[x].parent;
+					rightRotate<T>(pp_root, x, ia);
 				}
 
-				if (x->parent != NULL) {
-					x->parent->color = BLACK;
+				if (ia[x].parent != ia.null) {
+					ia[ia[x].parent].color = BLACK;
 
-					if (x->parent->parent != NULL) {
-						x->parent->parent->color = RED;
+					if (ia[ia[x].parent].parent != ia.null) {
+						ia[ia[ia[x].parent].parent].color = RED;
 
-						leftRotate<T>(pp_root, x->parent->parent);
+						leftRotate<T>(pp_root, ia[ia[x].parent].parent, ia);
 					}
 				}	
 			}
 		}
 
-		(*pp_root)->color = BLACK;
+		ia[*pp_root].color = BLACK;
 
 		return true;
 	}
 
-	template <typename T, typename ItemAlloc>
-	void destroy(typename Node<T>::NodeAllocator::pointer& p_node, 
-		typename Node<T>::NodeAllocator& nodeAlloc, ItemAlloc& itemAlloc) {
-
-		if (p_node != NULL) {
-			if (p_node->left != NULL) {
-				destroy<T>(p_node->left, nodeAlloc, itemAlloc);
+	template <typename T>
+	void destroy(typename ItemArray<T>::ItemId p_node, ItemArray<T> & ia) {
+		if (p_node != ItemArray<T>::null) {
+			if (ia[p_node].left != ItemArray<T>::null) {
+				destroy<T>(ia[p_node].left, ia);
 			}
 
-			if (p_node->right != NULL) {
-				destroy<T>(p_node->right, nodeAlloc, itemAlloc);
+			if (ia[p_node].right != ItemArray<T>::null) {
+				destroy<T>(ia[p_node].right, ia);
 			}
 		}
-
-		nodeAlloc.destroy(p_node);
 	}
 
 	template<typename T>
-	void Node<T>::serialize(ostream& os, int tabs) {
+	void Node<T>::serialize(ostream& os, int tabs, ItemArray<Node<T> >& ia) {
 		std::string newline;
 		newline += '\n';
 
@@ -415,10 +409,10 @@ namespace Tree {
 
 		os << "left: ";
 
-		if (left == NULL) {
+		if (left == ia.null) {
 			os << "null";
 		} else {
-			left->serialize(os, tabs);
+			ia[left].serialize(os, tabs, ia);
 		}
 
 		os << ",";
@@ -426,10 +420,10 @@ namespace Tree {
 		os << newline;
 		os << "right: ";
 
-		if (right == NULL) {
+		if (right == ia.null) {
 			os << "null";
 		} else {
-			right->serialize(os, tabs);
+			ia[right].serialize(os, tabs, ia);
 		}
 
 		--tabs;
