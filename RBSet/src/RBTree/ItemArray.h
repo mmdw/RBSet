@@ -11,15 +11,18 @@
 #include <map>
 #include <cassert>
 
+#include <iostream>
+
 template<typename T>
 class ItemArray {
 public:
 	ItemArray();
 	virtual ~ItemArray();
 
-	unsigned alloc(const T& item);
+	unsigned place(const T& item);
 	void free(unsigned id);
-	void debug();
+
+	void debug(std::ostream& os);
 	T& operator[](unsigned id);
 
 	static const unsigned null;
@@ -31,8 +34,7 @@ private:
 };
 
 template<typename T>
-ItemArray<T>::ItemArray() {
-	items.resize(items.size() + 1);
+ItemArray<T>::ItemArray() : items(1) {
 	items[null] = T();
 }
 
@@ -43,9 +45,8 @@ template<typename T>
 ItemArray<T>::~ItemArray() {
 }
 
-
 template<typename T>
-unsigned ItemArray<T>::alloc(const T& item) {
+unsigned ItemArray<T>::place(const T& item) {
 	std::map<unsigned, unsigned>::iterator it = freeBlocks.begin();
 	if (it == freeBlocks.end()) {
 		unsigned idx = items.size();
@@ -63,6 +64,8 @@ unsigned ItemArray<T>::alloc(const T& item) {
 	} else {
 		--(it->second);
 	}
+
+	items[idx] = item;
 
 	return idx;
 }
@@ -101,30 +104,30 @@ void ItemArray<T>::free(unsigned id) {
 }
 
 template<typename T>
-void ItemArray<T>::debug()  {
-	std::cout << "data: [";
+void ItemArray<T>::debug(std::ostream& os)  {
+	os << "data: [";
 	for (unsigned i = 0; i != items.size(); ++i) {
-		std::cout << items.at(i);
+		os << items.at(i);
 
 		if (i != items.size() - 1) {
-			std::cout << ", ";
+			os << ", ";
 		}
 	}
-	std::cout << ']' << std::endl;
+	os << ']' << std::endl;
 
-	std::cout << "free: [";
+	os << "free: [";
 	for (std::map<unsigned, unsigned>::iterator it = freeBlocks.begin(); it != freeBlocks.end(); ++it) {
 		if (it != freeBlocks.begin()) {
 			std::cout << ", ";
 		}
 
-		std::cout << it->first << ":" << it->first + it->second;
+		os << it->first << ":" << it->first + it->second;
 	}
-	std::cout << ']' << std::endl;
+	os << ']' << std::endl;
 }
 
 template<typename T>
 T& ItemArray<T>::operator [](unsigned id) {
 	assert(id != null);
-	return items.at(id);
+	return items[id];
 }

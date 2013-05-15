@@ -71,7 +71,9 @@ namespace Tree {
 	}
 
 	template <typename T>
-	void leftRotate(unsigned * pp_root, unsigned p_x, ItemArray< Node<T> >& ia) {
+	void leftRotate(typename ItemArray< Node<T> >::ItemId * pp_root,
+			        typename ItemArray< Node<T> >::ItemId p_x, ItemArray< Node<T> >& ia) {
+
 		unsigned p_y = ia[p_x].right;
 
 		ia[p_x].right = ia[p_y].left;
@@ -96,7 +98,8 @@ namespace Tree {
 	}
 
 	template <typename T>
-	void rightRotate(unsigned * pp_root, unsigned p_y, ItemArray< Node<T> >& ia) {
+	void rightRotate(typename ItemArray< Node<T> >::ItemId * pp_root,
+					 typename ItemArray< Node<T> >::ItemId p_y, ItemArray< Node<T> >& ia) {
 		unsigned p_x = ia[p_y].left;
 
 		ia[p_y].left = ia[p_x].right;
@@ -165,7 +168,11 @@ namespace Tree {
 	}
 
 	template <typename T>
-	void rbDeleteFixup(unsigned * root, unsigned x, unsigned x_parent, ItemArray<Node<T> >& ia) {
+	void rbDeleteFixup(typename ItemArray< Node<T> >::ItemId * root,
+					   typename ItemArray< Node<T> >::ItemId x,
+					   typename ItemArray< Node<T> >::ItemId x_parent,
+					   ItemArray<Node<T> >& ia) {
+
 		while (x != *root && color(x, ia) == BLACK) {
 			if (x == ia[x_parent].left) {
 				unsigned w = ia.null;
@@ -236,7 +243,7 @@ namespace Tree {
 	}
 
 	template <typename T>
-	unsigned treeMinimum(unsigned p_x, ItemArray<Node<T> >& ia) {
+	unsigned treeMinimum(typename ItemArray< Node<T> >::ItemId p_x, ItemArray<Node<T> >& ia) {
 		while (ia[p_x].left != ia.null) {
 			p_x = ia[p_x].left;
 		}
@@ -262,8 +269,7 @@ namespace Tree {
 
 	template <typename T>
 	unsigned treeNewNode(const T& value, ItemArray<Node<T> >& ia) {
-
-		return ia.alloc(value);
+		return ia.place(Node<T>(value));
 	}
 
 	template <typename T>
@@ -280,6 +286,8 @@ namespace Tree {
 		unsigned * pp_node = pp_root;
 		unsigned p_parent = ia.null;
 
+		unsigned newNode = treeNewNode(value, ia);
+
 		while (*pp_node != ia.null) {
 			if (ia[(*pp_node)].key == value) {
 				return ia.null;
@@ -294,14 +302,14 @@ namespace Tree {
 			}
 		}
 
-		*pp_node = treeNewNode(value, ia);
+		*pp_node = newNode;
 		ia[(*pp_node)].parent = p_parent;
 
 		return *pp_node;
 	}
 
 	template <typename T>
-	NodeColor color(unsigned node, ItemArray<Node<T> >& ia) {
+	NodeColor color(typename ItemArray< Node<T> >::ItemId node, ItemArray<Node<T> >& ia) {
 		if (node == ia.null) {
 			return BLACK;
 		}
@@ -310,7 +318,7 @@ namespace Tree {
 	}
 
 	template <typename T>
-	bool rbTreeInsert(unsigned * pp_root, const T& key, ItemArray<Node<T> >& ia) {
+	bool rbTreeInsert(typename ItemArray< Node<T> >::ItemId * pp_root, const T& key, ItemArray<Node<T> >& ia) {
 		unsigned x = treeInsert(pp_root, key, ia);
 
 		if (x == ia.null) {
@@ -409,7 +417,7 @@ namespace Tree {
 
 		os << "left: ";
 
-		if (left == ia.null) {
+		if (left == ItemArray<Node<T> >::null) {
 			os << "null";
 		} else {
 			ia[left].serialize(os, tabs, ia);
@@ -420,7 +428,7 @@ namespace Tree {
 		os << newline;
 		os << "right: ";
 
-		if (right == ia.null) {
+		if (right == ItemArray<Node<T> >::null) {
 			os << "null";
 		} else {
 			ia[right].serialize(os, tabs, ia);
@@ -429,5 +437,11 @@ namespace Tree {
 		--tabs;
 		os << newline;
 		os << "}";
+	}
+
+	template <typename T>
+	std::ostream& operator<<(std::ostream& os, Node<T>& node) {
+		os << "[key: " << node.key << ", left: " << node.left << ", right: " << node.right << ", parent: " << node.parent << "]";
+		return os;
 	}
 }

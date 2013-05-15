@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "AbstractSet.h"
+#include "RBTree/RBNodeParser.h"
 #include "RBTree/RBNode.h"
 
 template <typename T>
@@ -22,6 +23,8 @@ public:
 	AbstractIterator<T>* iterator();
 
 	~RBSet();
+
+	void debug(std::ostream& os);
 
 private:
 	typedef Tree::Node<T> TreeNode;
@@ -58,8 +61,10 @@ RBSet<T>::RBSet() : p_root(ItemArray<TreeNode>::null), count(0) {
 }
 
 template<typename T>
-RBSet<T>::RBSet(std::istream& is) : p_root(TreeNode::null), count(0) {
-	parseRbNode(is, &p_root, count);
+RBSet<T>::RBSet(std::istream& is) : p_root(ItemArray<TreeNode>::null), count(0) {
+	Tree::RBNodeParser parser(is);
+
+	p_root = parser.parseRbNode(count, ia);
 }
 
 template<typename T>
@@ -193,4 +198,9 @@ bool RBSet<T>::RBSetIterator::hasNext() {
 template<typename T>
 T& RBSet<T>::RBSetIterator::item() {
 	return ia[p_node].key;
+}
+
+template <typename T>
+void RBSet<T>::debug(std::ostream& os) {
+	ia.debug(os);
 }

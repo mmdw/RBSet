@@ -16,7 +16,7 @@ namespace Tree {
 		RBNodeParser(istream& is);
 
 		template<typename T>
-		void parseRbNode(typename ItemArray<Node<T> >::ItemId * pp_node, size_t& count, ItemArray<Node<T> >& ia);
+		typename ItemArray<Node<T> >::ItemId parseRbNode(size_t& count, ItemArray<Node<T> >& ia);
 
 	private:
 		istream& is;
@@ -39,14 +39,16 @@ namespace Tree {
 	}
 
 	template<typename T>
-	void RBNodeParser::parseRbNode(typename ItemArray<Node<T> >::ItemId * pp_node, size_t& count, ItemArray<Node<T> >& ia) {
+	typename ItemArray<Node<T> >::ItemId RBNodeParser::parseRbNode(size_t& count, ItemArray<Node<T> >& ia) {
 		skipWs(is);
+		typename ItemArray<Node<T> >::ItemId p_node;
+
 		if (next(is) == '{') {
 			read(is); // {
 
-			*pp_node = ia.alloc(Node<T>());
+			p_node = ia.place(Node<T>());
 			++count;
-			parseFieldSequence(*pp_node, count, ia);
+			parseFieldSequence(p_node, count, ia);
 
 			skipWs(is);
 			if (next(is) != '}') {
@@ -59,11 +61,13 @@ namespace Tree {
 			string maybeNull = readWord(is);
 
 			if (!maybeNull.compare("null")) {
-				*pp_node = NULL;
+				p_node = ItemArray<Node<T> >::null;
 			} else {
 				error("expected: null or {");
 			}
 		}
+
+		return p_node;
 	}
 
 	template<typename T>
@@ -104,22 +108,25 @@ namespace Tree {
 		} else if (!fieldName.compare("left")) {
 			skipWs(is);
 			if (next(is) == '{' || next(is) == 'n') {
-				parseRbNode(ia[p_node].left, count, ia);
+				typename ItemArray<Node<T> >::ItemId leftId = parseRbNode(count, ia);
 
-				if (ia[p_node].left != ItemArray<Node<T> >::null) {
-					ia[ia[p_node].left].parent = p_node;
+				if (leftId != ItemArray<Node<T> >::null) {
+					ia[leftId].parent = p_node;
 				}
+
+				ia[p_node].left = leftId;
 			} else {
 				error("expected: object");
 			}
 		} else if (!fieldName.compare("right")) {
 			skipWs(is);
 			if (next(is) == '{' || next(is) == 'n') {
-				parseRbNode(ia[p_node].right, count, ia);
+				typename ItemArray<Node<T> >::ItemId rightId = parseRbNode(count, ia);
 
-				if (ia[p_node].right != ItemArray<Node<T> >::null) {
-					ia[ia[p_node].right].parent = p_node;
+				if (rightId != ItemArray<Node<T> >::null) {
+					ia[rightId].parent = p_node;
 				}
+				ia[p_node].right = rightId;
 			} else {
 				error("expected: object or null");
 			}
