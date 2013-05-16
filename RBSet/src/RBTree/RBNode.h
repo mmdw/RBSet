@@ -289,16 +289,16 @@ namespace Tree {
 		unsigned newNode = treeNewNode(value, ia);
 
 		while (*pp_node != ia.null) {
-			if (ia[(*pp_node)].key == value) {
+			if (ia[*pp_node].key == value) {
 				return ia.null;
 			}
 
 			p_parent = *pp_node;
 
 			if (value < ia[(*pp_node)].key) {
-				pp_node = &(ia[(*pp_node)].left);
+				pp_node = &(ia[*pp_node].left);
 			} else {
-				pp_node = &(ia[(*pp_node)].right);
+				pp_node = &(ia[*pp_node].right);
 			}
 		}
 

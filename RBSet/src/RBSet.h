@@ -3,6 +3,8 @@
 #include <memory>
 #include <iostream>
 
+#include "RBSetException.h"
+
 #include "AbstractSet.h"
 #include "RBTree/RBNodeParser.h"
 #include "RBTree/RBNode.h"
@@ -15,7 +17,7 @@ public:
 	RBSet(const RBSet& rhs);
 
 	void serialize(ostream& os);
-	void remove	(const T& value);
+	void remove(const T& value);
 	void put(const T&);
 	size_t size() const;
 	bool contains(const T& value) const;
@@ -106,6 +108,8 @@ void RBSet<T>::remove(const T& value) {
 	if (p_node != ItemArray<TreeNode>::null) {
 		rbDelete(&p_root, p_node, ia);
 		--count;
+	} else {
+		throw RBSetException("RBSet::remove : set does not contain item");
 	}
 }
 
@@ -142,8 +146,7 @@ RBSet<T>::RBSetIterator::RBSetIterator(typename ItemArray<TreeNode>::ItemId p_no
 template<typename T>
 void RBSet<T>::RBSetIterator::next() {
 	if (p_node == ItemArray<TreeNode>::null) {
-		std::cerr << "end reached";
-		exit(-1);
+		throw RBSetException("RBSet::RBSetIterator : end reached");
 	}
 
 	if (ia[p_node].right != ItemArray<TreeNode>::null) {
@@ -164,8 +167,7 @@ void RBSet<T>::RBSetIterator::next() {
 template<typename T>
 void RBSet<T>::RBSetIterator::prev() {
 	if (p_node == ItemArray<TreeNode>::null && p_root == ItemArray<TreeNode>::null) {
-		std::cerr << "empty tree";
-		exit(-1);
+		throw RBSetException("RBSet::RBSetIterator : tree is empty");
 	}
 
 	if (p_node == ItemArray<TreeNode>::null) {
