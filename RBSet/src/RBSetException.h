@@ -21,8 +21,8 @@ public:
 
 private:
   const std::string message;
+
   virtual const char* what() const throw() {
     return message.c_str();
   }
 };
-

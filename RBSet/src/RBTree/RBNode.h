@@ -25,16 +25,16 @@ namespace Tree {
 
 		Node(const T& key) :
 			key(key),
-			parent(ItemArray<Node<T> >::null),
-			left(ItemArray<Node<T> >::null),
-			right(ItemArray<Node<T> >::null),
+			parent(ItemArray<Node<T> >::Null),
+			left(ItemArray<Node<T> >::Null),
+			right(ItemArray<Node<T> >::Null),
 			color(BLACK) {
 		}
 
 		Node() :
-			parent(ItemArray<Node<T> >::null),
-			left(ItemArray<Node<T> >::null),
-			right(ItemArray<Node<T> >::null),
+			parent(ItemArray<Node<T> >::Null),
+			left(ItemArray<Node<T> >::Null),
+			right(ItemArray<Node<T> >::Null),
 			color(BLACK) {
 		}
 
@@ -77,13 +77,13 @@ namespace Tree {
 		unsigned p_y = ia[p_x].right;
 
 		ia[p_x].right = ia[p_y].left;
-		if (ia[p_x].right != ia.null) {
+		if (ia[p_x].right != ItemArray<Node<T> >::Null) {
 			ia[ia[p_x].right].parent = p_x;
 		}
 
 		ia[p_y].parent = ia[p_x].parent;
 
-		if (ia[p_x].parent != ia.null) {
+		if (ia[p_x].parent != ItemArray<Node<T> >::Null) {
 			if (p_x == ia[ia[p_x].parent].left) {
 				ia[ia[p_x].parent].left = p_y;
 			} else {
@@ -103,13 +103,13 @@ namespace Tree {
 		unsigned p_x = ia[p_y].left;
 
 		ia[p_y].left = ia[p_x].right;
-		if (ia[p_y].left != ia.null) {
+		if (ia[p_y].left != ItemArray<Node<T> >::Null) {
 			ia[ia[p_y].left].parent = p_y;
 		}
 
 		ia[p_x].parent = ia[p_y].parent;
 
-		if (ia[p_y].parent != ia.null) {
+		if (ia[p_y].parent != ItemArray<Node<T> >::Null) {
 			if (p_y == ia[ia[p_y].parent].right) {
 				ia[ia[p_y].parent].right = p_x;
 			} else {
@@ -126,29 +126,29 @@ namespace Tree {
 	template <typename T>
 	void rbDelete(typename ItemArray<Node<T> >::ItemId * pp_root,
 			      typename ItemArray<Node<T> >::ItemId p_z, ItemArray<Node<T> >& ia) {
-		unsigned p_y = ia.null;
+		unsigned p_y = ItemArray<Node<T> >::Null;
 
-		if (ia[p_z].left == ia.null || ia[p_z].right == ia.null) {
+		if (ia[p_z].left == ItemArray<Node<T> >::Null || ia[p_z].right == ItemArray<Node<T> >::Null) {
 			p_y = p_z;
 		} else {
 			p_y = treeSuccessor(p_z, ia);
 		}
 
-		unsigned p_x = ia.null;
-		if (ia[p_y].left != ia.null) {
+		unsigned p_x = ItemArray<Node<T> >::Null;
+		if (ia[p_y].left != ItemArray<Node<T> >::Null) {
 			p_x = ia[p_y].left;
 		} else {
 			p_x = ia[p_y].right;
 		}
 
-		unsigned p_x_parent = ia.null;
-		if (p_x != ItemArray<Node<T> >::null) {
+		unsigned p_x_parent = ItemArray<Node<T> >::Null;
+		if (p_x != ItemArray<Node<T> >::Null) {
 			ia[p_x].parent = p_x_parent = ia[p_y].parent;
 		} else {
 			p_x_parent = ia[p_y].parent;
 		}
 
-		if (ia[p_y].parent == ia.null) {
+		if (ia[p_y].parent == ItemArray<Node<T> >::Null) {
 			*pp_root = p_x;
 		} else {
 			if (p_y == ia[ia[p_y].parent].left){
@@ -175,7 +175,7 @@ namespace Tree {
 
 		while (x != *root && color(x, ia) == BLACK) {
 			if (x == ia[x_parent].left) {
-				unsigned w = ia.null;
+				unsigned w = ItemArray<Node<T> >::Null;
 
 				w = ia[x_parent].right;
 
@@ -205,7 +205,7 @@ namespace Tree {
 					x = *root;
 				}
 			} else {
-				unsigned w = ia.null;
+				unsigned w = ItemArray<Node<T> >::Null;
 
 				w = ia[x_parent].left;
 
@@ -237,14 +237,14 @@ namespace Tree {
 			}
 		}
 
-		if (x != ia.null) {
+		if (x != ItemArray<Node<T> >::Null) {
 			ia[x].color = BLACK;
 		}
 	}
 
 	template <typename T>
 	unsigned treeMinimum(typename ItemArray< Node<T> >::ItemId p_x, ItemArray<Node<T> >& ia) {
-		while (ia[p_x].left != ia.null) {
+		while (ia[p_x].left != ItemArray<Node<T> >::Null) {
 			p_x = ia[p_x].left;
 		}
 
@@ -253,13 +253,13 @@ namespace Tree {
 
 	template <typename T>
 	unsigned treeSuccessor(unsigned p_x, ItemArray<Node<T> >& ia) {
-		if (ia[p_x].right != ia.null) {
+		if (ia[p_x].right != ItemArray<Node<T> >::Null) {
 			return treeMinimum(ia[p_x].right, ia);
 		}
 
 		unsigned p_y = ia[p_x].parent;
 
-		while (p_y != ia.null && p_x == ia[p_y].right) {
+		while (p_y != ItemArray<Node<T> >::Null && p_x == ia[p_y].right) {
 			p_x = p_y;
 			p_y = ia[p_y].parent;
 		}
@@ -277,20 +277,20 @@ namespace Tree {
 		unsigned * pp_root, const T& value,
 		ItemArray<Node<T> >& ia) {
 
-		if (*pp_root == ia.null) {
+		if (*pp_root == ItemArray<Node<T> >::Null) {
 			*pp_root = treeNewNode(value, ia);
 
 			return *pp_root;
 		}
 
 		unsigned * pp_node = pp_root;
-		unsigned p_parent = ia.null;
+		unsigned p_parent = ItemArray<Node<T> >::Null;
 
 		unsigned newNode = treeNewNode(value, ia);
 
-		while (*pp_node != ia.null) {
+		while (*pp_node != ItemArray<Node<T> >::Null) {
 			if (ia[*pp_node].key == value) {
-				return ia.null;
+				return ItemArray<Node<T> >::Null;
 			}
 
 			p_parent = *pp_node;
@@ -310,7 +310,7 @@ namespace Tree {
 
 	template <typename T>
 	NodeColor color(typename ItemArray< Node<T> >::ItemId node, ItemArray<Node<T> >& ia) {
-		if (node == ia.null) {
+		if (node == ItemArray<Node<T> >::Null) {
 			return BLACK;
 		}
 
@@ -321,7 +321,7 @@ namespace Tree {
 	bool rbTreeInsert(typename ItemArray< Node<T> >::ItemId * pp_root, const T& key, ItemArray<Node<T> >& ia) {
 		unsigned x = treeInsert(pp_root, key, ia);
 
-		if (x == ia.null) {
+		if (x == ItemArray<Node<T> >::Null) {
 			return false;
 		}
 
@@ -342,10 +342,10 @@ namespace Tree {
 					leftRotate<T>(pp_root, x, ia);
 				}
 
-				if (ia[x].parent != ia.null) {
+				if (ia[x].parent != ItemArray<Node<T> >::Null) {
 					ia[ia[x].parent].color = BLACK;
 
-					if (ia[ia[x].parent].parent != ia.null) {
+					if (ia[ia[x].parent].parent != ItemArray<Node<T> >::Null) {
 						ia[ia[ia[x].parent].parent].color = RED;
 
 						rightRotate<T>(pp_root, ia[ia[x].parent].parent, ia);
@@ -365,10 +365,10 @@ namespace Tree {
 					rightRotate<T>(pp_root, x, ia);
 				}
 
-				if (ia[x].parent != ia.null) {
+				if (ia[x].parent != ItemArray<Node<T> >::Null) {
 					ia[ia[x].parent].color = BLACK;
 
-					if (ia[ia[x].parent].parent != ia.null) {
+					if (ia[ia[x].parent].parent != ItemArray<Node<T> >::Null) {
 						ia[ia[ia[x].parent].parent].color = RED;
 
 						leftRotate<T>(pp_root, ia[ia[x].parent].parent, ia);
@@ -384,12 +384,12 @@ namespace Tree {
 
 	template <typename T>
 	void destroy(typename ItemArray<T>::ItemId p_node, ItemArray<T> & ia) {
-		if (p_node != ItemArray<T>::null) {
-			if (ia[p_node].left != ItemArray<T>::null) {
+		if (p_node != ItemArray<T>::Null) {
+			if (ia[p_node].left != ItemArray<T>::Null) {
 				destroy<T>(ia[p_node].left, ia);
 			}
 
-			if (ia[p_node].right != ItemArray<T>::null) {
+			if (ia[p_node].right != ItemArray<T>::Null) {
 				destroy<T>(ia[p_node].right, ia);
 			}
 		}
@@ -417,7 +417,7 @@ namespace Tree {
 
 		os << "left: ";
 
-		if (left == ItemArray<Node<T> >::null) {
+		if (left == ItemArray<Node<T> >::Null) {
 			os << "null";
 		} else {
 			ia[left].serialize(os, tabs, ia);
@@ -428,7 +428,7 @@ namespace Tree {
 		os << newline;
 		os << "right: ";
 
-		if (right == ItemArray<Node<T> >::null) {
+		if (right == ItemArray<Node<T> >::Null) {
 			os << "null";
 		} else {
 			ia[right].serialize(os, tabs, ia);

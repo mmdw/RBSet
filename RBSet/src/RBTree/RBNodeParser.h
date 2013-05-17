@@ -61,7 +61,7 @@ namespace Tree {
 			string maybeNull = readWord(is);
 
 			if (!maybeNull.compare("null")) {
-				p_node = ItemArray<Node<T> >::null;
+				p_node = ItemArray<Node<T> >::Null;
 			} else {
 				error("expected: null or {");
 			}
@@ -110,7 +110,7 @@ namespace Tree {
 			if (next(is) == '{' || next(is) == 'n') {
 				typename ItemArray<Node<T> >::ItemId leftId = parseRbNode(count, ia);
 
-				if (leftId != ItemArray<Node<T> >::null) {
+				if (leftId != ItemArray<Node<T> >::Null) {
 					ia[leftId].parent = p_node;
 				}
 
@@ -123,7 +123,7 @@ namespace Tree {
 			if (next(is) == '{' || next(is) == 'n') {
 				typename ItemArray<Node<T> >::ItemId rightId = parseRbNode(count, ia);
 
-				if (rightId != ItemArray<Node<T> >::null) {
+				if (rightId != ItemArray<Node<T> >::Null) {
 					ia[rightId].parent = p_node;
 				}
 				ia[p_node].right = rightId;

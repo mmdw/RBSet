@@ -8,8 +8,8 @@ public:
 	virtual bool hasNext() = 0;
 	virtual T& item() = 0;
 
-	virtual ~AbstractIterator			() { }
+	virtual ~AbstractIterator() { }
 
 protected:
-	AbstractIterator							() { }
+	AbstractIterator() { }
 };

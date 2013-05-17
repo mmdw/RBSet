@@ -25,7 +25,7 @@ public:
 	void debug(std::ostream& os);
 	T& operator[](unsigned id);
 
-	static const unsigned null;
+	static const unsigned Null;
 	typedef unsigned ItemId;
 
 private:
@@ -35,11 +35,11 @@ private:
 
 template<typename T>
 ItemArray<T>::ItemArray() : items(1) {
-	items[null] = T();
+	items[Null] = T();
 }
 
 template<typename T>
-const unsigned ItemArray<T>::null(0);
+const unsigned ItemArray<T>::Null(0);
 
 template<typename T>
 ItemArray<T>::~ItemArray() {
@@ -127,7 +127,7 @@ void ItemArray<T>::debug(std::ostream& os)  {
 }
 
 template<typename T>
-T& ItemArray<T>::operator [](unsigned id) {
-	assert(id != null);
+T& ItemArray<T>::operator[](unsigned id) {
+	assert(id != Null);
 	return items[id];
 }
