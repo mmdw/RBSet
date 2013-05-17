@@ -46,24 +46,24 @@ namespace Tree {
 	};
 
 	template <typename T>
-	typename Node<T>::NodeAllocator::pointer 
-	copyNode(const Node<T>* rhs, ItemArray< Node <T> >& ia) {
-		if (rhs == NULL) {
-			return NULL;
+	typename ItemArray<Node<T> >::ItemId
+	copyNode(typename ItemArray<Node<T> >::ItemId rhs, const ItemArray< Node <T> >& rhsia, ItemArray< Node <T> >& ia) {
+		if (rhs == ItemArray< Node <T> >::Null) {
+			return ItemArray< Node <T> >::Null;
 		}
 
-		typename ItemArray<Node<T> >::ItemId result = ia.alloc(Node<T>());
+		typename ItemArray<Node<T> >::ItemId result = ia.place(Node<T>());
 
-		ia[result].color = rhs->color;
-		ia[result].key   = rhs->key;
+		ia[result].color = rhsia[rhs].color;
+		ia[result].key   = rhsia[rhs].key;
 
-		if (rhs->left != NULL) {
-			ia[result].left = copyNode(rhs->left, ia);
+		if (rhsia[rhs].left != ItemArray< Node <T> >::Null) {
+			ia[result].left = copyNode(rhsia[rhs].left, rhsia, ia);
 			ia[ia[result].left].parent = result;
 		}
 
-		if (rhs->right != NULL) {
-			ia[result].right = copyNode(rhs->right, ia);
+		if (rhsia[rhs].right != ItemArray< Node <T> >::Null) {
+			ia[result].right = copyNode(rhsia[rhs].right, rhsia, ia);
 			ia[ia[result].right].parent = result;
 		}
 
@@ -295,7 +295,7 @@ namespace Tree {
 
 			p_parent = *pp_node;
 
-			if (value < ia[(*pp_node)].key) {
+			if (value < ia[*pp_node].key) {
 				pp_node = &(ia[*pp_node].left);
 			} else {
 				pp_node = &(ia[*pp_node].right);
@@ -400,41 +400,41 @@ namespace Tree {
 		std::string newline;
 		newline += '\n';
 
+		++tabs;
 		for (int i = 0; i < 2 * tabs; ++i) {
 			newline += ' ';
 		}
 
-		++tabs;
 
 		os << "{";
 		os << newline;
 
-		os << "key: " << key << ",";
+		os << "key: ";
+		os << key;
+		os << ",";
 		os << newline;
 
-		os << "color: " << (color == BLACK ? "'black'" : "'red'") << ",";
-		os << newline;
+		os << "color: " << (color == BLACK ? "black" : "red");
 
-		os << "left: ";
-
-		if (left == ItemArray<Node<T> >::Null) {
-			os << "null";
-		} else {
+		if (left != ItemArray<Node<T> >::Null) {
+			os << ",";
+			os << newline;
+			os << "left: ";
 			ia[left].serialize(os, tabs, ia);
 		}
 
-		os << ",";
-
-		os << newline;
-		os << "right: ";
-
-		if (right == ItemArray<Node<T> >::Null) {
-			os << "null";
-		} else {
+		if (right != ItemArray<Node<T> >::Null) {
+			os << ",";
+			os << newline;
+			os << "right: ";
 			ia[right].serialize(os, tabs, ia);
 		}
 
 		--tabs;
+		newline = '\n';
+		for (int i = 0; i < 2 * tabs; ++i) {
+			newline += ' ';
+		}
 		os << newline;
 		os << "}";
 	}

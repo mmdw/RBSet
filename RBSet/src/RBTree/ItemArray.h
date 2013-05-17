@@ -24,6 +24,7 @@ public:
 
 	void debug(std::ostream& os);
 	T& operator[](unsigned id);
+	const T& operator[](unsigned id) const;
 
 	static const unsigned Null;
 	typedef unsigned ItemId;
@@ -128,6 +129,12 @@ void ItemArray<T>::debug(std::ostream& os)  {
 
 template<typename T>
 T& ItemArray<T>::operator[](unsigned id) {
+	assert(id != Null);
+	return items[id];
+}
+
+template<typename T>
+const T& ItemArray<T>::operator[](unsigned id) const {
 	assert(id != Null);
 	return items[id];
 }

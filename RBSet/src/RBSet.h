@@ -68,15 +68,15 @@ RBSet<T>::RBSet() : contractChecker(*this), p_root(ItemArray<TreeNode>::Null), c
 }
 
 template<typename T>
-RBSet<T>::RBSet(std::istream& is) : p_root(ItemArray<TreeNode>::Null), count(0) {
+RBSet<T>::RBSet(std::istream& is) : contractChecker(*this), p_root(ItemArray<TreeNode>::Null), count(0) {
 	Tree::RBNodeParser parser(is);
 
 	p_root = parser.parseRbNode(count, ia);
 }
 
 template<typename T>
-RBSet<T>::RBSet(const RBSet& rhs) : count(rhs.count) {
-	p_root = copyNode(rhs.p_root, ia);
+RBSet<T>::RBSet(const RBSet& rhs) : contractChecker(*this), count(rhs.count) {
+	p_root = copyNode(rhs.p_root, rhs.ia, ia);
 }
 
 template<typename T>
@@ -107,7 +107,7 @@ void RBSet<T>::remove(const T& value) {
 	typename ItemArray<TreeNode>::ItemId p_node = p_root;
 
 	while (p_node != ItemArray<TreeNode>::Null && ia[p_node].key != value) {
-		p_node = ia[p_node].key > value ? ia[p_node].left : ia[p_node].right;
+		p_node = value < ia[p_node].key ? ia[p_node].left : ia[p_node].right;
 	}
 
 	if (p_node != ItemArray<TreeNode>::Null) {

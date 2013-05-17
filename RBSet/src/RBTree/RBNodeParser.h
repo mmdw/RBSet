@@ -26,7 +26,7 @@ namespace Tree {
 		char read(istream& is);
 		bool hasNext(istream& is);
 		string readWord(istream& is);
-		string readNumber(istream& is);
+		string readKey(istream& is);
 
 		void skipWs(istream& is);
 
@@ -41,7 +41,7 @@ namespace Tree {
 	template<typename T>
 	typename ItemArray<Node<T> >::ItemId RBNodeParser::parseRbNode(size_t& count, ItemArray<Node<T> >& ia) {
 		skipWs(is);
-		typename ItemArray<Node<T> >::ItemId p_node;
+		typename ItemArray<Node<T> >::ItemId p_node = ItemArray<Node<T> >::Null;
 
 		if (next(is) == '{') {
 			read(is); // {
@@ -98,7 +98,7 @@ namespace Tree {
 			}
 		} else if (!fieldName.compare("key")) {
 			skipWs(is);
-			string keyString = readNumber(is);
+			string keyString = readKey(is);
 
 			std::istringstream iss(keyString);
 			T key;
@@ -188,10 +188,10 @@ namespace Tree {
 		return result;
 	}
 
-	string RBNodeParser::readNumber(istream& is) {
+	string RBNodeParser::readKey(istream& is) {
 		string result;
 
-		while (isdigit(next(is))) {
+		while (next(is) != ',' && next(is) != '}') {
 			result += read(is);
 		}
 
