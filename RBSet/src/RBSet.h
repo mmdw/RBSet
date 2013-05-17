@@ -137,6 +137,18 @@ AbstractIterator<T>* RBSet<T>::iterator() {
 
 template<typename T>
 bool RBSet<T>::contains(const T& value) const {
+	typename ItemArray<TreeNode>::ItemId p_node = p_root;
+
+	while (p_node != ItemArray<TreeNode>::Null) {
+		if (value == ia[p_node].key) {
+			return true;
+		} else if (value < ia[p_node].key) {
+			p_node = ia[p_node].left;
+		} else {
+			p_node = ia[p_node].right;
+		}
+	}
+
 	return false;
 }
 

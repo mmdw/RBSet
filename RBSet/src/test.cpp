@@ -10,29 +10,57 @@
 #include <string>
 #include <sstream>
 
+struct Vector2D {
+	float a, b;
+
+	Vector2D() : a(0), b(0) {
+
+	}
+
+	Vector2D(float a, float b) :a(a), b(b) {
+
+	}
+
+	bool operator<(const Vector2D& rhs) const {
+		return a < rhs.a ? true : b < rhs.b;
+	}
+
+	bool operator!=(const Vector2D& rhs) const {
+		return a != rhs.a || b != rhs.b;
+	}
+
+	bool operator==(const Vector2D& rhs) const {
+		return a == rhs.a && b == rhs.b;
+	}
+};
+
+std::ostream&  operator<<(std::ostream& os, const Vector2D& v) {
+	os << '(' << v.a << "; " << v.b << ')';
+	return os;
+}
+
+std::istream& operator>>(std::istream& is,  Vector2D& v) {
+	assert(is.get() == '(');
+	is >> v.a;
+
+	assert(is.get() == ';');
+	is >> v.b;
+
+	assert(is.get() == ')');
+
+	return is;
+}
+
 int main(int argc, char ** argv) {
-	RBSet<int> set;
+	RBSet<Vector2D> set;
+	set.put(Vector2D(0, 0));
+	set.put(Vector2D(0, 1));
+	set.put(Vector2D(0, 2));
+	set.put(Vector2D(0, 5));
 
-	set.put(2);
-	set.put(4);
-	set.put(6);
-	set.put(1);
-	set.put(3);
-	set.put(8);
+	set.contains(Vector2D(0, 5));
+	set.serialize(std::cout);
 
-	set.checkInvariant();
-	set.remove(2);
-	set.checkInvariant();
-	set.remove(3);
-	set.checkInvariant();
-	set.remove(1);
-	set.checkInvariant();
-	set.remove(4);
-	set.checkInvariant();
-	set.remove(6);
-	set.checkInvariant();
-	set.remove(8);
-	set.checkInvariant();
 	return 0;
 }
 
