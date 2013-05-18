@@ -42,7 +42,7 @@ namespace Tree {
 
 		}
 
-		void serialize(ostream& os, int tabs, ItemArray<Node<T> >& ia);
+		void serialize(ostream& os, int tabs, const ItemArray<Node<T> >& ia) const;
 	};
 
 	template <typename T>
@@ -116,7 +116,7 @@ namespace Tree {
 				ia[ia[p_y].parent].left = p_x;
 			}
 		} else {
-			(*pp_root) = p_x;
+			*pp_root = p_x;
 		}
 
 		ia[p_x].right= p_y;
@@ -296,14 +296,14 @@ namespace Tree {
 			p_parent = *pp_node;
 
 			if (value < ia[*pp_node].key) {
-				pp_node = &(ia[*pp_node].left);
+				pp_node = &ia[*pp_node].left;
 			} else {
-				pp_node = &(ia[*pp_node].right);
+				pp_node = &ia[*pp_node].right;
 			}
 		}
 
 		*pp_node = newNode;
-		ia[(*pp_node)].parent = p_parent;
+		ia[*pp_node].parent = p_parent;
 
 		return *pp_node;
 	}
@@ -396,7 +396,7 @@ namespace Tree {
 	}
 
 	template<typename T>
-	void Node<T>::serialize(ostream& os, int tabs, ItemArray<Node<T> >& ia) {
+	void Node<T>::serialize(ostream& os, int tabs, const ItemArray<Node<T> >& ia) const {
 		std::string newline;
 		newline += '\n';
 
@@ -405,15 +405,7 @@ namespace Tree {
 			newline += ' ';
 		}
 
-
-		os << "{";
-		os << newline;
-
-		os << "key: ";
-		os << key;
-		os << ",";
-		os << newline;
-
+		os << "{" << newline << "key: " << key << "," << newline;
 		os << "color: " << (color == BLACK ? "black" : "red");
 
 		if (left != ItemArray<Node<T> >::Null) {
@@ -435,8 +427,7 @@ namespace Tree {
 		for (int i = 0; i < 2 * tabs; ++i) {
 			newline += ' ';
 		}
-		os << newline;
-		os << "}";
+		os << newline << "}";
 	}
 
 	template <typename T>

@@ -7,6 +7,8 @@
 #include "ItemArray.h"
 #include "RBNode.h"
 
+class RBSetParserException;
+
 using std::istream;
 using std::string;
 
@@ -21,7 +23,6 @@ namespace Tree {
 	private:
 		istream& is;
 
-		void error(const char* msg);
 		char next(istream& is);
 		char read(istream& is);
 		bool hasNext(istream& is);
@@ -52,7 +53,7 @@ namespace Tree {
 
 			skipWs(is);
 			if (next(is) != '}') {
-				error("expected: }");
+				throw RBSetParserException("expected: }");
 			}
 
 			read(is); // }
@@ -63,7 +64,7 @@ namespace Tree {
 			if (!maybeNull.compare("null")) {
 				p_node = ItemArray<Node<T> >::Null;
 			} else {
-				error("expected: null or {");
+				throw RBSetParserException("expected: null or {");
 			}
 		}
 
@@ -74,14 +75,14 @@ namespace Tree {
 	void RBNodeParser::parseFieldSequence(typename ItemArray<Node<T> >::ItemId p_node, size_t& count, ItemArray<Node<T> >& ia) {
 		skipWs(is);
 		if (!isalpha(next(is))) {
-			error("expected: field name");
+			throw RBSetParserException("expected: field name");
 		}
 
 		string fieldName = readWord(is);
 
 		skipWs(is);
 		if (next(is) != ':') {
-			error("expected: :");
+			throw RBSetParserException("expected: :");
 		}
 		read(is); // :
 
@@ -94,7 +95,7 @@ namespace Tree {
 			} else if (!color.compare("red")) {
 				ia[p_node].color = RED;
 			} else {
-				error("expected: red or black");
+				throw RBSetParserException("expected: red or black");
 			}
 		} else if (!fieldName.compare("key")) {
 			skipWs(is);
@@ -116,7 +117,7 @@ namespace Tree {
 
 				ia[p_node].left = leftId;
 			} else {
-				error("expected: object");
+				throw RBSetParserException("expected: object");
 			}
 		} else if (!fieldName.compare("right")) {
 			skipWs(is);
@@ -128,10 +129,10 @@ namespace Tree {
 				}
 				ia[p_node].right = rightId;
 			} else {
-				error("expected: object or null");
+				throw RBSetParserException("expected: object or null");
 			}
 		} else {
-			error("expected: valid field name");
+			throw RBSetParserException("expected: valid field name");
 		}
 
 		skipWs(is);
@@ -142,12 +143,6 @@ namespace Tree {
 		}
 
 		string field = readWord(is);
-	}
-
-	void RBNodeParser::error(const char* msg) {
-		std::cerr << msg;
-
-		exit(-1);
 	}
 
 	char RBNodeParser::next(istream& is) {

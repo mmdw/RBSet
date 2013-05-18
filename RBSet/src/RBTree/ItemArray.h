@@ -16,18 +16,19 @@
 template<typename T>
 class ItemArray {
 public:
+	static const unsigned Null;
+	typedef unsigned ItemId;
+
 	ItemArray();
 	virtual ~ItemArray();
 
 	unsigned place(const T& item);
 	void free(unsigned id);
 
-	void debug(std::ostream& os);
 	T& operator[](unsigned id);
 	const T& operator[](unsigned id) const;
 
-	static const unsigned Null;
-	typedef unsigned ItemId;
+	void debug(std::ostream& os);
 
 private:
 	std::vector<T> items;

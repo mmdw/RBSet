@@ -26,3 +26,18 @@ private:
     return message.c_str();
   }
 };
+
+class RBSetIteratorException: public RBSetException {
+public:
+	RBSetIteratorException(std::string message) : RBSetException(message) {
+
+	}
+};
+
+class RBSetParserException: public RBSetException {
+public:
+  RBSetParserException(std::string message) : RBSetException(message) {
+
+  }
+};
+
