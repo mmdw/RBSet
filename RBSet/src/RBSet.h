@@ -9,6 +9,7 @@
 #include "RBTree/RBNodeParser.h"
 #include "RBTree/RBNode.h"
 #include "Contract/RBSetContractChecker.h"
+#include "RBSetIterator.h"
 
 template <typename T>
 class RBSet : public AbstractSet<T> {
@@ -32,6 +33,9 @@ public:
 	void debug(std::ostream& os);
 	void checkInvariant() const;
 
+	RBSet& operator>>(T& rhs);
+	RBSet& operator<<(const T& rhs);
+
 private:
 	RBSetContractChecker<T> contractChecker;
 	typedef Tree::Node<T> TreeNode;
@@ -39,28 +43,9 @@ private:
 	ItemArray<TreeNode> ia;
 	typename ItemArray<TreeNode>::ItemId p_root;
 	size_t count;
-
-	class RBSetIterator : public AbstractIterator<T> {
-	public:
-		friend AbstractIterator<T>* const RBSet::iterator();
-
-		RBSetIterator(const RBSetIterator& rhs);
-
-		void next();
-		void prev();
-		bool hasNext() const;
-		T& item();
-
-	private:
-		typename ItemArray<TreeNode>::ItemId p_node;
-		typename ItemArray<TreeNode>::ItemId p_root;
-		ItemArray<TreeNode>& ia;
-
-		RBSetIterator(typename ItemArray<TreeNode>::ItemId p_node,
-				      typename ItemArray<TreeNode>::ItemId p_root,
-				      ItemArray<TreeNode>& ia);
-	};
 };
+
+
 
 template<typename T>
 RBSet<T>::RBSet() : contractChecker(*this), p_root(ItemArray<TreeNode>::Null), count(0) {
@@ -151,7 +136,7 @@ AbstractIterator<T>* const RBSet<T>::iterator() {
 		}
 	}
 
-	return new RBSetIterator(p_node, p_root, ia);
+	return new RBSetIterator<T>(p_node, p_root, ia);
 }
 
 template<typename T>
@@ -172,72 +157,6 @@ bool RBSet<T>::contains(const T& value) const {
 	return false;
 }
 
-template<typename T>
-RBSet<T>::RBSetIterator::RBSetIterator(typename ItemArray<TreeNode>::ItemId p_node,
-									   typename ItemArray<TreeNode>::ItemId p_root,
-									   ItemArray<TreeNode>& ia)
-	: p_node(p_node), p_root(p_root), ia(ia) {
-
-}
-
-template<typename T>
-void RBSet<T>::RBSetIterator::next() {
-	if (p_node == ItemArray<TreeNode>::Null) {
-		throw RBSetIteratorException("RBSet::RBSetIterator : end reached");
-	}
-
-	if (ia[p_node].right != ItemArray<TreeNode>::Null) {
-		p_node = ia[p_node].right;
-
-		while (ia[p_node].left != ItemArray<TreeNode>::Null) {
-			p_node = ia[p_node].left;
-		}
-	} else {
-		while (ia[p_node].parent != ItemArray<TreeNode>::Null && p_node == ia[ia[p_node].parent].right) {
-			p_node = ia[p_node].parent;
-		}
-
-		p_node = ia[p_node].parent;
-	}
-}
-
-template<typename T>
-void RBSet<T>::RBSetIterator::prev() {
-	if (p_node == ItemArray<TreeNode>::Null && p_root == ItemArray<TreeNode>::Null) {
-		throw RBSetIteratorException("RBSet::RBSetIterator : tree is empty");
-	}
-
-	if (p_node == ItemArray<TreeNode>::Null) {
-		p_node = p_root;
-		while (ia[p_node].right != ItemArray<TreeNode>::Null) {
-			p_node = ia[p_node].right;
-		}
-	} else {
-		if (ia[p_node].left != ItemArray<TreeNode>::Null) {
-			p_node = ia[p_node].left;
-
-			while (ia[p_node].right != ItemArray<TreeNode>::Null) {
-				p_node = ia[p_node].right;
-			}
-		} else {
-			while (ia[p_node].parent != ItemArray<TreeNode>::Null && p_node == ia[ia[p_node].parent].left) {
-				p_node = ia[p_node].parent;
-			}
-
-			p_node = ia[p_node].parent;
-		}
-	}
-}
-
-template<typename T>
-bool RBSet<T>::RBSetIterator::hasNext() const {
-	return p_node != ItemArray<TreeNode>::Null;
-}
-
-template<typename T>
-T& RBSet<T>::RBSetIterator::item() {
-	return ia[p_node].key;
-}
 
 template <typename T>
 void RBSet<T>::debug(std::ostream& os) {
@@ -247,4 +166,32 @@ void RBSet<T>::debug(std::ostream& os) {
 template <typename T>
 void RBSet<T>::checkInvariant() const {
 	contractChecker.checkInvariant();
+}
+
+template <typename T>
+RBSet<T>& RBSet<T>::operator>>(T& rhs) {
+	checkInvariant();
+
+	typename ItemArray<TreeNode>::ItemId p_node = p_root;
+	if (p_node != ItemArray<TreeNode>::Null) {
+		while (ia[p_node].left != ItemArray<TreeNode>::Null) {
+			p_node = ia[p_node].left;
+		}
+	}
+
+	if (p_node == ItemArray<TreeNode>::Null) {
+		throw RBSetException("RBSet::operator>> : set is empty");
+	}
+
+	rhs = ia[p_node].key;
+	remove(rhs);
+
+	return *this;
+}
+
+template <typename T>
+RBSet<T>& RBSet<T>::operator<<(const T& rhs) {
+	put(rhs);
+
+	return *this;
 }
