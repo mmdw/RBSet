@@ -9,20 +9,48 @@ using std::ostream;
 using std::istream;
 
 namespace Tree {
+	/**
+	 * Цвет узла
+	 */
 	enum NodeColor {
 		RED, BLACK
 	};
 			
+	/**
+	 * Узел красно-черного дерева
+	 */
 	template <typename T>
 	struct Node {
+		/**
+		 * Значение
+		 */
 		T key;
 
+		/**
+		 * Ссылка на родительский элемент
+		 */
 		typename ItemArray<Node<T> >::ItemId parent;
+
+		/**
+		 * Ссылка на левый дочерний элемент
+		 */
 		typename ItemArray<Node<T> >::ItemId left;
+
+		/**
+		 * Ссылка на правый дочерний элемент
+		 */
 		typename ItemArray<Node<T> >::ItemId right;
 
+		/**
+		 * Цвет узла
+		 */
 		NodeColor color;
 
+		/**
+		 * Конструктор
+		 *
+		 * @param key значение
+		 */
 		Node(const T& key) :
 			key(key),
 			parent(ItemArray<Node<T> >::Null),
@@ -31,6 +59,9 @@ namespace Tree {
 			color(BLACK) {
 		}
 
+		/**
+		 * Конструктор по умолчанию
+		 */
 		Node() :
 			parent(ItemArray<Node<T> >::Null),
 			left(ItemArray<Node<T> >::Null),
@@ -38,13 +69,30 @@ namespace Tree {
 			color(BLACK) {
 		}
 
+		/**
+		 * Деструктор
+		 */
 		~Node() {
 
 		}
 
+		/**
+		 * Сериализация
+		 *
+		 * @param os поток
+		 * @param tabs отступ
+		 * @param ia вектор, содержащий узлы красно-черного дерева
+		 */
 		void serialize(ostream& os, int tabs, const ItemArray<Node<T> >& ia) const;
 	};
 
+	/**
+	 * Выполняет копирование дерева
+	 *
+	 * @param rhs корень исходного дерева
+	 * @param rhsia вектор, содержащий узлы исходного дерева
+	 * @param ia вектор, в который будет скопировано дерево
+	 */
 	template <typename T>
 	typename ItemArray<Node<T> >::ItemId
 	copyNode(typename ItemArray<Node<T> >::ItemId rhs, const ItemArray< Node <T> >& rhsia, ItemArray< Node <T> >& ia) {
@@ -70,6 +118,13 @@ namespace Tree {
 		return result;
 	}
 
+	/**
+	 * Левый поворот
+	 *
+	 * @param pp_root указатель на корень дерева
+	 * @param p_x узел
+	 * @param ia вектор с узлами дерева
+	 */
 	template <typename T>
 	void leftRotate(typename ItemArray< Node<T> >::ItemId * pp_root,
 			        typename ItemArray< Node<T> >::ItemId p_x, ItemArray< Node<T> >& ia) {
@@ -97,6 +152,13 @@ namespace Tree {
 		ia[p_x].parent = p_y;
 	}
 
+	/**
+	 * Правый поворот
+	 *
+	 * @param pp_root указатель на корень дерева
+	 * @param p_y узел
+	 * @param ia вектор с узлами дерева
+	 */
 	template <typename T>
 	void rightRotate(typename ItemArray< Node<T> >::ItemId * pp_root,
 					 typename ItemArray< Node<T> >::ItemId p_y, ItemArray< Node<T> >& ia) {
@@ -123,6 +185,14 @@ namespace Tree {
 		ia[p_y].parent = p_x;
 	}
 
+
+	/**
+	 * Удаление узлов из красно-черного дерева
+	 *
+	 * @param pp_root указатель на корень дерева
+	 * @param p_z узел
+	 * @param ia вектор с узлами дерева
+	 */
 	template <typename T>
 	void rbDelete(typename ItemArray<Node<T> >::ItemId * pp_root,
 			      typename ItemArray<Node<T> >::ItemId p_z, ItemArray<Node<T> >& ia) {
@@ -167,6 +237,14 @@ namespace Tree {
 		}
 	}
 
+	/**
+	 * Приведение дерева к виду, соответствующему свойствам красно-черного дерева после удаления узла.
+	 *
+	 * @param * root указатель на корень дерева
+	 * @param x узел
+	 * @param x_parent родительский узел
+	 * @param ia вектор с узлами дерева
+	 */
 	template <typename T>
 	void rbDeleteFixup(typename ItemArray< Node<T> >::ItemId * root,
 					   typename ItemArray< Node<T> >::ItemId x,
@@ -242,6 +320,12 @@ namespace Tree {
 		}
 	}
 
+	/**
+	 * Поиск узла с минимальным элементом
+	 *
+	 * @param p_x корень
+	 * @param ia вектор, содержащий узлы дерева
+	 */
 	template <typename T>
 	unsigned treeMinimum(typename ItemArray< Node<T> >::ItemId p_x, ItemArray<Node<T> >& ia) {
 		while (ia[p_x].left != ItemArray<Node<T> >::Null) {
@@ -251,6 +335,12 @@ namespace Tree {
 		return p_x;
 	}
 
+	/**
+	 * Поиск узла, предшествующего заданному
+	 *
+	 * @param p_x заданный узел
+	 * @param ia вектор, содержащий узлы дерева
+	 */
 	template <typename T>
 	unsigned treeSuccessor(unsigned p_x, ItemArray<Node<T> >& ia) {
 		if (ia[p_x].right != ItemArray<Node<T> >::Null) {
@@ -267,11 +357,25 @@ namespace Tree {
 		return p_y;
 	}
 
+	/**
+	 * Размещение нового элемента
+	 *
+	 * @param value элемент
+	 * @param ia вектор, содержащий узлы дерева
+	 * @return номер нового элемента в векторе
+	 */
 	template <typename T>
-	unsigned treeNewNode(const T& value, ItemArray<Node<T> >& ia) {
+	typename ItemArray<Node<T> >::ItemId treeNewNode(const T& value, ItemArray<Node<T> >& ia) {
 		return ia.place(Node<T>(value));
 	}
 
+	/**
+	 * Вставка нового элемента в дерево
+	 *
+	 * @param pp_root указатель на корень
+	 * @param value элемент
+	 * @param ia вектор, содержащий узлы дерева
+	 */
 	template <typename T>
 	typename ItemArray<Node<T> >::ItemId treeInsert(
 		unsigned * pp_root, const T& value,
@@ -308,6 +412,13 @@ namespace Tree {
 		return *pp_node;
 	}
 
+	/**
+	 * Возвращает цвет узла, даже если узел Null
+	 *
+	 * @param node номер узла
+	 * @param ia вектор, содержащий узлы дерева
+	 * @return цвет узла
+	 */
 	template <typename T>
 	NodeColor color(typename ItemArray< Node<T> >::ItemId node, ItemArray<Node<T> >& ia) {
 		if (node == ItemArray<Node<T> >::Null) {
@@ -317,6 +428,13 @@ namespace Tree {
 		return ia[node].color;
 	}
 
+	/**
+	 * Вставка значения в красно-черное дерево
+	 *
+	 * @param pp_root указатель на корень
+	 * @param key элемент
+	 * @param ia вектор, содержащий узлы дерева
+	 */
 	template <typename T>
 	bool rbTreeInsert(typename ItemArray< Node<T> >::ItemId * pp_root, const T& key, ItemArray<Node<T> >& ia) {
 		unsigned x = treeInsert(pp_root, key, ia);
@@ -382,6 +500,9 @@ namespace Tree {
 		return true;
 	}
 
+	/**
+	 * Рекурсивное удаление элементов дерева из вектора
+	 */
 	template <typename T>
 	void destroy(typename ItemArray<T>::ItemId p_node, ItemArray<T> & ia) {
 		if (p_node != ItemArray<T>::Null) {
@@ -395,6 +516,13 @@ namespace Tree {
 		}
 	}
 
+	/**
+	 * Сериализация
+	 *
+	 * @param os поток
+	 * @param tabs отступ
+	 * @param ia вектор, содержащий узлы дерева
+	 */
 	template<typename T>
 	void Node<T>::serialize(ostream& os, int tabs, const ItemArray<Node<T> >& ia) const {
 		std::string newline;
@@ -430,6 +558,9 @@ namespace Tree {
 		os << newline << "}";
 	}
 
+	/**
+	 * Вывод объекта Node в поток. Используется в отладочных целях.
+	 */
 	template <typename T>
 	std::ostream& operator<<(std::ostream& os, Node<T>& node) {
 		os << "[key: " << node.key << ", left: " << node.left << ", right: " << node.right << ", parent: " << node.parent << "]";

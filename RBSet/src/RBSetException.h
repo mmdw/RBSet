@@ -9,8 +9,16 @@
 #include <string>
 #include <exception>
 
+/**
+ * Базовый класс объектов исключений для множества.
+ */
 class RBSetException: public std::exception {
 public:
+  /**
+   * Конструктор
+   *
+   * @param message сообщение
+   */
   RBSetException(std::string message) : message(message) {
 
   }
@@ -27,15 +35,31 @@ private:
   }
 };
 
+/**
+ * Класс объектов исключений для итератора множества
+ */
 class RBSetIteratorException: public RBSetException {
 public:
+  /**
+   * Конструктор
+   *
+   * @param message сообщение
+   */
 	RBSetIteratorException(std::string message) : RBSetException(message) {
 
 	}
 };
 
+/**
+ * Класс объектов исключений для сериализации.
+ */
 class RBSetParserException: public RBSetException {
 public:
+  /**
+   * Конструктор
+   *
+   * @param message сообщение
+   */
   RBSetParserException(std::string message) : RBSetException(message) {
 
   }

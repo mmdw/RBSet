@@ -1,9 +1,3 @@
-/*
- * RBSetContrat.h
- *
- *  Created on: 17.05.2013
- *      Author: user
- */
 #pragma once
 
 #include <list>
@@ -11,9 +5,16 @@
 template <typename T>
 class RBSet;
 
+/**
+ * Проверяет соответствие состояния объекта RBSet контрактам.
+ */
 template <typename T>
 class RBSetContractChecker {
 public:
+	/**
+	 * Конструктор
+	 * @param set ссылка на множество.
+	 */
 	RBSetContractChecker(RBSet<T>& set);
 
 	/**
@@ -22,22 +23,28 @@ public:
 	void checkInvariant() const;
 
 	/**
-	 * Проверка на то, что элемент добавлен.
+	 * Проверка того, что элемент добавлен.
+	 * @param value добавленный элкмент
 	 */
 	void checkPutPostcondition(const T& value) const;
 
 	/**
 	 * Проверка на то, что элемент удален.
+	 * @param value удаленный элемент
 	 */
 	void checkRemovePostcondition(const T& value) const;
 
 private:
+	/**
+	 * Ссылка на множество
+	 */
 	RBSet<T>& set;
 
 	/**
 	 * Проверка корректности ссылок на родительский узел.
 	 */
 	void checkIntegrity(typename ItemArray<Tree::Node<T> >::ItemId node) const;
+
 	/**
 	 * Свойство 3
 	 *

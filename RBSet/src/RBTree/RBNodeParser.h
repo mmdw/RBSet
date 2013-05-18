@@ -13,24 +13,78 @@ using std::istream;
 using std::string;
 
 namespace Tree {
+	/**
+	 * Класс, выполняющий десереализацию дерева.
+	 */
 	class RBNodeParser {
 	public:
+		/**
+		 * Конструктор
+		 *
+		 * @param is поток
+		 */
 		RBNodeParser(istream& is);
 
+		/**
+		 * Считывает очередной узел
+		 *
+		 * @param count ссылка для подчсета количества считанных узлов
+		 * @param ia вектор, в котором хранятся узлы дерева
+		 */
 		template<typename T>
 		typename ItemArray<Node<T> >::ItemId parseRbNode(size_t& count, ItemArray<Node<T> >& ia);
 
 	private:
+		/**
+		 * Поток
+		 */
 		istream& is;
 
+		/**
+		 * Считывает следующий символ
+		 *
+		 * @return символ
+		 */
 		char next(istream& is);
+
+		/**
+		 * Считывает текущий символ
+		 *
+		 * @return символ
+		 */
 		char read(istream& is);
+
+		/**
+		 * @return true, если еще есть символы
+		 */
 		bool hasNext(istream& is);
+
+		/**
+		 * Считывает слово
+		 *
+		 * @return слово
+		 */
 		string readWord(istream& is);
+
+		/**
+		 * Считывает значение узла
+		 *
+		 * @return значение узла
+		 */
 		string readKey(istream& is);
 
+		/**
+		 * Пропуск пробелов
+		 */
 		void skipWs(istream& is);
 
+		/**
+		 * Считывает значения полей "left", "right", "key"
+		 *
+		 * @param p_node номер узла
+		 * @param count ссылка на счетчик узлов
+		 * @param ia вектор с узлами красно-черного дерева
+		 */
 		template<typename T>
 		void parseFieldSequence(typename ItemArray<Node<T> >::ItemId p_node, size_t& count, ItemArray<Node<T> >& ia);
 	};

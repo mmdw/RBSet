@@ -1,3 +1,79 @@
+/*! \mainpage RBSet
+ * Множество на массиве с использованием красно-черного дерева.
+ *
+ * \section desc_sec Базовые операции
+ * \subsection put добавление элементов
+ * Можно выполнить с помощью метода @ref RBSet<T>::put(const T& value) и с помощью оператора <b>>></b>
+ * \code
+	RBSet<int> set;
+	set.put(3);
+	set.put(2);
+	set << 1 << 4;
+ * \endcode
+ * \subsection get удаление элементов
+ * выполняется с помощью метода @ref RBSet<T>::remove(const T& value)
+ * \code
+	RBSet<int> set;
+	set.put(3);
+	set.put(2);
+
+	set.remove(3);
+	set.remove(0); // будет брошено исключение
+ * \endcode
+ * \subsection iterator перебор элементов множества
+ * Перечисление элементов выполняется с помошью итератора.
+ * \code
+	RBSet<int> set;
+	set << 1 << 2 << 3 << 4;
+
+	AbstractIterator<int> * const it = set.iterator();
+	while (it->hasNext()) {
+		std::cout << it->item() << ' ';
+
+		it->next();
+	}
+
+	delete it;
+ * \endcode
+ * \subsection serialize сериализация
+ * Множество может быть преобразовано в строку байт и восстановлено обратно. Строка байт предстваляет собой простой JSON-подобный формат.
+ * <br/> Сохраняются элементы множества и структура красно-черного дерева.
+ *
+ * Пример:
+ * \code
+	RBSet<int> A;
+	set << 3 << 2 << 1 << 4;
+
+	std::ostringstream oss;
+	A.serialize(oss);
+ * \endcode
+ * В поток <b>oss</b> будет записана следующая информация:
+ * \code
+	{
+	  key: 2,
+	  color: black,
+	  left: {
+	  	  key: 1,
+	  	  color: black
+	  },
+	  right: {
+	  	  key: 3,
+	  	  color: black,
+	  	  right: {
+	  	  	  key: 4,
+	  	  	  color: red
+	  	  }
+	  }
+	}
+ * \endcode
+ * Чтобы восстановить объект, нужно в конструктор множества передать поток ввода:
+ * \code
+	std::istringstream iss(oss.str());
+	RBSet<Vector2D> B(iss);
+ * \endcode
+ * Множество <b>B</b> будет содержать те же элементы, что и множество <b>А</b>.
+ */
+
 #pragma once
 
 #include <memory>
@@ -11,18 +87,36 @@
 #include "Contract/RBSetContractChecker.h"
 #include "RBSetIterator.h"
 
+/**
+ * Множество на красно-черном дереве
+ */
 template <typename T>
 class RBSet : public AbstractSet<T> {
 	friend class RBSetContractChecker<T>;
 
 public:
 	RBSet();
+	/**
+	 * Конструирует множество из потока (десереализация).
+	 */
 	RBSet(istream& os);
+
+	/**
+	 * Конструктор копирования
+	 *
+	 * @param rhs оригинал
+	 */
 	RBSet(const RBSet& rhs);
 
 	~RBSet();
 
+	/**
+	 * Выполняет сериализацию множества
+	 *
+	 * @param os поток
+	 */
 	void serialize(ostream& os) const;
+
 	void remove(const T& value);
 	void put(const T&);
 	size_t size() const;
@@ -30,10 +124,30 @@ public:
 
 	AbstractIterator<T> * const iterator();
 
+	/**
+	 * Вывод отладочной информации
+	 */
 	void debug(std::ostream& os);
+
+	/**
+	 * Выполняет проверку инварианта
+	 */
 	void checkInvariant() const;
 
+	/**
+	 * Добавление элемента в множество
+	 * @param rhs элемент
+	 * @return ссылка на множество
+	 */
 	RBSet& operator>>(T& rhs);
+
+	/**
+	 * Извлечение элемента из множества.
+	 * Элементы извлекаются в порядке возрастания.
+	 *
+	 * @param rhs элемент
+	 * @return ссылка на множество
+	 */
 	RBSet& operator<<(const T& rhs);
 
 private:

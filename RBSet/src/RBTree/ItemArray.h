@@ -13,25 +13,77 @@
 
 #include <iostream>
 
+/**
+ * Вспомогательный класс, отвечающий за размещение узлов красно-черного дерева в векторе.
+ */
 template<typename T>
 class ItemArray {
 public:
-	static const unsigned Null;
+	/**
+	 * Тип "номер узла в векторе"
+	 */
 	typedef unsigned ItemId;
 
+	/**
+	 * Номер для узла Null.
+	 */
+	static const ItemId Null;
+
+	/**
+	 * Констркутор
+	 */
 	ItemArray();
+
+	/**
+	 * Деструктор
+	 */
 	virtual ~ItemArray();
 
-	unsigned place(const T& item);
-	void free(unsigned id);
+	/**
+	 * Размещает элемент в векторе
+	 *
+	 * @param id номер элемента
+	 */
+	ItemId place(const T& id);
 
+	/**
+	 * Освобождает занятое место в векторе
+	 *
+	 * @param id номер элемента
+	 */
+	void free(ItemId id);
+
+	/**
+	 * Доступ к элементу по его номеру.
+	 *
+	 * @param id номер элемента
+	 * @return ссылка на элемент
+	 */
 	T& operator[](unsigned id);
+
+	/**
+	 * Доступ к элементу по его номеру.
+	 *
+	 * @param id номер элемента
+	 * @return константная ссылка на элемент
+	 */
 	const T& operator[](unsigned id) const;
 
+	/**
+	 * Отладочный вывод
+	 */
 	void debug(std::ostream& os);
 
 private:
+	/**
+	 * Вектор, в котором размещаются узлы красно-черного дерева
+	 */
 	std::vector<T> items;
+
+	/**
+	 * Отображение "номер элемента" -> "количество подряд идущих свободных ячеек"
+	 * Отвечает за учет свободных ячеек вектора
+	 */
 	std::map<unsigned, unsigned> freeBlocks;
 };
 

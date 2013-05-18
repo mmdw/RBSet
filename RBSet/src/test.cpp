@@ -52,20 +52,18 @@ std::istream& operator>>(std::istream& is,  Vector2D& v) {
 }
 
 int main(int argc, char ** argv) {
-	RBSet<Vector2D> set;
+//	RBSet<Vector2D> set;
+//
+//	set << Vector2D(0, 3);
+//	set << Vector2D(0, 1);
+//
+//	set.put(Vector2D(0, 2));
+//	set.put(Vector2D(0, 5));
 
-	set << Vector2D(0, 3);
-	set << Vector2D(0, 1);
+	RBSet<int> set;
+	set << 3 << 2 << 1 << 4;
 
-	set.put(Vector2D(0, 2));
-	set.put(Vector2D(0, 5));
-
-	Vector2D vec1, vec2, vec3, vec4;
-
-	set >> vec1 >> vec2 >> vec3 >> vec4;
-
-	std::cout << vec1 << vec2 << vec3 << vec4;
-
+	set.serialize(std::cout);
 	return 0;
 }
 

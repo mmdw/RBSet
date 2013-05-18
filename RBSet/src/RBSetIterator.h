@@ -6,11 +6,21 @@
  */
 #pragma once
 
+
+/**
+ * Итератор для множества RBSet.
+ */
 template<typename T>
 class RBSetIterator : public AbstractIterator<T> {
 public:
+	/**
+	 * Дружественный метод класса RBSet, который создает новый итератор.
+	 */
 	friend AbstractIterator<T>* const RBSet<T>::iterator();
 
+	/**
+	 * Конструктор копирования
+	 */
 	RBSetIterator(const RBSetIterator& rhs);
 
 	void next();
