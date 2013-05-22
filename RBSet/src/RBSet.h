@@ -87,6 +87,8 @@
 #include "Contract/RBSetContractChecker.h"
 #include "RBSetIterator.h"
 
+struct SetDebug;
+
 /**
  * Множество на красно-черном дереве
  */
@@ -150,6 +152,8 @@ public:
 	 */
 	RBSet& operator<<(const T& rhs);
 
+	RBSet& operator<<(SetDebug sd);
+
 private:
 	RBSetContractChecker<T> contractChecker;
 	typedef Tree::Node<T> TreeNode;
@@ -157,17 +161,27 @@ private:
 	ItemArray<TreeNode> ia;
 	typename ItemArray<TreeNode>::ItemId p_root;
 	size_t count;
+	bool isDebug;
 };
 
+struct SetDebug {
+	bool isDebug;
 
+	SetDebug(bool sd) : isDebug(sd) { }
+};
+
+inline SetDebug setdebug(bool debug) {
+	return SetDebug(debug);
+}
 
 template<typename T>
-RBSet<T>::RBSet() : contractChecker(*this), p_root(ItemArray<TreeNode>::Null), count(0) {
+RBSet<T>::RBSet() : contractChecker(*this), p_root(ItemArray<TreeNode>::Null), count(0), isDebug(false) {
 	checkInvariant();
 }
 
 template<typename T>
-RBSet<T>::RBSet(std::istream& is) : contractChecker(*this), p_root(ItemArray<TreeNode>::Null), count(0) {
+RBSet<T>::RBSet(std::istream& is) : contractChecker(*this), p_root(ItemArray<TreeNode>::Null),
+		count(0), isDebug(false) {
 	Tree::RBNodeParser parser(is);
 	p_root = parser.parseRbNode(count, ia);
 
@@ -175,7 +189,7 @@ RBSet<T>::RBSet(std::istream& is) : contractChecker(*this), p_root(ItemArray<Tre
 }
 
 template<typename T>
-RBSet<T>::RBSet(const RBSet& rhs) : contractChecker(*this), count(rhs.count) {
+RBSet<T>::RBSet(const RBSet& rhs) : contractChecker(*this), count(rhs.count), isDebug(false) {
 	p_root = copyNode(rhs.p_root, rhs.ia, ia);
 
 	checkInvariant();
@@ -300,6 +314,14 @@ RBSet<T>& RBSet<T>::operator>>(T& rhs) {
 	rhs = ia[p_node].key;
 	remove(rhs);
 
+	return *this;
+}
+
+template <typename T>
+RBSet<T>& RBSet<T>::operator<<(SetDebug sd) {
+	isDebug = sd.isDebug;
+
+	contractChecker.setEnabled(isDebug);
 	return *this;
 }
 

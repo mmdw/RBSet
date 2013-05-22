@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <iomanip>
 
 struct Vector2D {
 	float a, b;
@@ -61,7 +62,11 @@ int main(int argc, char ** argv) {
 //	set.put(Vector2D(0, 5));
 
 	RBSet<int> set;
+	set << setdebug(true);
 	set << 3 << 2 << 1 << 4;
+
+
+
 
 	set.serialize(std::cout);
 	return 0;

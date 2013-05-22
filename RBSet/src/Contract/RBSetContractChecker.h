@@ -34,7 +34,16 @@ public:
 	 */
 	void checkRemovePostcondition(const T& value) const;
 
+	/**
+	 * Включает/выключает проверку инварианта
+	 */
+	void setEnabled(bool enabled);
+
 private:
+	/**
+	 * true, если используется
+	 */
+	bool enable;
 	/**
 	 * Ссылка на множество
 	 */
@@ -66,12 +75,16 @@ private:
 };
 
 template <typename T>
-RBSetContractChecker<T>::RBSetContractChecker(RBSet<T>& set) : set(set) {
+RBSetContractChecker<T>::RBSetContractChecker(RBSet<T>& set) : enable(false), set(set) {
 
 }
 
 template <typename T>
 void RBSetContractChecker<T>::checkInvariant() const {
+	if (!enable) {
+		return;
+	}
+
 	checkIntegrity(set.p_root);
 	checkProperty3(set.p_root);
 	checkProperty4();
@@ -151,10 +164,24 @@ inline void RBSetContractChecker<T>::checkIntegrity(
 
 template<typename T>
 void RBSetContractChecker<T>::checkPutPostcondition(const T& value) const {
+	if (!enable) {
+		return;
+	}
+
 	assert(set.contains(value));
 }
 
 template<typename T>
 void RBSetContractChecker<T>::checkRemovePostcondition(const T& value) const {
+	if (!enable) {
+		return;
+	}
+
 	assert(!set.contains(value));
+}
+
+
+template<typename T>
+void RBSetContractChecker<T>::setEnabled(bool isEnabled) {
+	enable = isEnabled;
 }
